@@ -15,16 +15,6 @@
 #include <lx_emul.h>
 #include <lx_emul/alloc.h>
 
-#include <linux/dma-mapping.h>
-
-/**
- * A proper implementation need to be provided for CQE to be enabled.
- */
-void * dmam_alloc_attrs(struct device * dev,size_t size,dma_addr_t * dma_handle,gfp_t gfp,unsigned long attrs)
-{
-	lx_emul_trace(__func__);
-	return NULL;
-}
 
 #include <linux/ratelimit_types.h>
 

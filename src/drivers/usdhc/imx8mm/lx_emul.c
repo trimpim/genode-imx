@@ -1,6 +1,7 @@
 /*
  * \brief  Driver-specific emulation of Linux Kernel functions
  * \author Stefan Kalkowski
+ * \author Jean-Adrien Domage
  * \date   2021-10-01
  */
 
@@ -14,6 +15,15 @@
 #include <lx_emul.h>
 
 #include <asm-generic/delay.h>
+#include <linux/dma-mapping.h>
+#include <linux/types.h>
+
+
+void * dmam_alloc_attrs(struct device * dev,size_t size,dma_addr_t * dma_handle,gfp_t gfp,unsigned long attrs)
+{
+	return dma_alloc_attrs(dev, size, dma_handle, gfp, attrs);
+}
+
 
 void __const_udelay(unsigned long xloops)
 {
