@@ -1,7 +1,7 @@
-TARGET  := imx_usdhc_drv
-REQUIRE := arm_v8a
-LIBS    := base
-INC_DIR := $(PRG_DIR)
+TARGET   := imx_usdhc_drv
+REQUIRES := arm_v8a
+LIBS     := base
+INC_DIR  := $(PRG_DIR)
 
 LX_CONTRIB_DIR  := $(call select_from_ports,iot_gateway_linux)/linux
 
@@ -156,9 +156,14 @@ $(foreach file,$(LX_SRC),$(eval $(call CC_OPT_LX_RULES,$(file:%.c=%))))
 # The resulting dtb file is named <driver>-<board>.dtb
 #
 
-BOARDS                                    := imx8mmq_compulab_iot_gateway
-DTS_PATH(imx8mmq_compulab_iot_gateway)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
-DTS_EXTRACT(imx8mmq_compulab_iot_gateway) := --select usdhc2
+BOARDS := imx8mmq_compulab_iot_gateway-usdhc2 \
+          imx8mmq_compulab_iot_gateway-usdhc3
+
+DTS_PATH(imx8mmq_compulab_iot_gateway-usdhc2)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(imx8mmq_compulab_iot_gateway-usdhc2) := --select usdhc2
+
+DTS_PATH(imx8mmq_compulab_iot_gateway-usdhc3)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(imx8mmq_compulab_iot_gateway-usdhc3) := --select usdhc3
 
 DTS_TOOL           := $(BASE_DIR)/../../tool/dts/extract
 CUSTOM_TARGET_DEPS += $(addprefix $(INSTALL_DIR)/$(TARGET)-,$(addsuffix .dtb,$(BOARDS)))

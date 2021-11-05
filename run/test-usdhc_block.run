@@ -6,8 +6,10 @@ create_boot_directory
 import_from_depot [depot_user]/src/[base_src] \
                   [depot_user]/src/base-hw-imx8mmq_compulab_iot_gateway_drivers \
                   [depot_user]/src/init \
-                  [depot_user]/src/platform_drv \
                   [depot_user]/src/usdhc \
+                  [depot_user]/src/platform_drv \
+                  [depot_user]/src/part_block \
+                  [depot_user]/src/block_tester \
                   [depot_user]/src/report_rom
 
 build { app/block_tester }
@@ -25,46 +27,38 @@ install_config {
 	</parent-provides>
 	<default caps="100"/>
 
-	<start name="imx8mq_platform_drv">
+	<start name="report_rom" caps="60">
+		<resource name="RAM" quantum="2M"/>
+		<provides>
+			<service name="ROM"/>
+			<service name="Report"/>
+		</provides>
+		<config verbose="yes">
+		</config>
+		<route> <any-service> <parent/> </any-service> </route>
+	</start>
+
+	<start name="platform_drv">
+		<binary name="imx8mq_platform_drv"/>
 		<resource name="RAM" quantum="1M"/>
 		<provides><service name="Platform"/></provides>
 		<config>
 
-			<device name="usdhc2" type="fsl,imx7d-usdhc">
-				<io_mem address="0x30b50000" size="0x10000"/>
-				<irq    number="55"/>
+			<device name="usdhc3" type="fsl,imx8mm-usdhc">
+				<io_mem address="0x30b60000" size="0x10000"/>
+				<irq    number="56"/>
 				<clock  name="ipg_clk_root"
 				        driver_name="ipg"/>
 				<clock  name="nand_usdhc_bus_clk_root"
 				        driver_name="ahb"/>
-				<clock  name="usdhc2_clk_root"
+				<clock  name="usdhc3_clk_root"
 				        rate="200000000"
 				        driver_name="per"/>
-				<clock  name="usdhc2_gate"/>
+				<clock  name="usdhc3_gate"/>
 			</device>
 
-			<policy label="imx_usdhc_drv -> " info="yes">
-				<device name="usdhc2"/>
-			</policy>
-
-			<device name="gpio-bank_1">
-				<io_mem address="0x30200000" size="0x10000"/>
-				<irq number="96"/>
-				<irq number="97"/>
-			</device>
-
-			<policy label="regulator-usdhc2_v -> " info="yes">
-				<device name="gpio-bank_1"/>
-			</policy>
-
-			<device name="gpio-bank_2">
-				<io_mem address="0x30210000" size="0x10000"/>
-				<irq number="98"/>
-				<irq number="99"/>
-			</device>
-
-			<policy label="regulator-usdhc2_rst -> " info="yes">
-				<device name="gpio-bank_2"/>
+			<policy label="usdhc_drv -> " info="yes">
+				<device name="usdhc3"/>
 			</policy>
 
 		</config>
@@ -87,76 +81,59 @@ install_config {
 		<route> <any-service> <parent/> </any-service> </route>
 	</start>
 
-	<start name="regulator-usdhc2_v" caps="300">
-		<binary name="imx_gpio_drv"/>
-		<resource name="RAM" quantum="1M"/>
-		<provides><service name="Gpio"/></provides>
-		<config>
-			<gpio num="4" mode="O" value="1"/>
-		</config>
-
-		<route>
-			<service name="Platform"> <child name="imx8mq_platform_drv"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
-	<start name="regulator-usdhc2_rst" caps="300">
-		<binary name="imx_gpio_drv"/>
-		<resource name="RAM" quantum="1M"/>
-		<provides><service name="Gpio"/></provides>
-		<config>
-			<gpio num="19" mode="O" value="1"/>
-		</config>
-
-		<route>
-			<service name="Platform"> <child name="imx8mq_platform_drv"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
-	<start name="imx_usdhc_drv" caps="300">
+	<start name="usdhc_drv" caps="300">
+		<binary name="imx_usdhc_drv"/>
 		<resource name="RAM" quantum="16M"/>
-		<provides><service name="Block"/></provides>
+		<provides> <service name="Block"/> </provides>
 		<config report="yes">
 			<default-policy device="mmcblk0"/>
 		</config>
 		<route>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<service name="Platform"> <child name="platform_drv"/> </service>
 			<service name="ROM" label="dtb">
-				<parent label="imx_usdhc_drv-imx8mmq_compulab_iot_gateway.dtb"/>
+				<parent label="imx_usdhc_drv-imx8mmq_compulab_iot_gateway-usdhc3.dtb"/>
 			</service>
-			<service name="ROM"> <parent/> </service>
-			<service name="PD">  <parent/> </service>
-			<service name="RM">  <parent/> </service>
-			<service name="CPU"> <parent/> </service>
-			<service name="LOG"> <parent/> </service>
-			<any-service> <any-child/> </any-service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="part_block" caps="150">
+		<resource name="RAM" quantum="10M" />
+		<provides><service name="Block" /></provides>
+
+		<config io_buffer="1M">
+			<report partitions="yes"/>
+			<policy label_prefix="block_tester" partition="3" writeable="yes"/>
+		</config>
+
+		<route>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<service name="Block"> <child name="usdhc_drv"/> </service>
+			<any-service> <parent/> </any-service>
 		</route>
 	</start>
 
 	<start name="block_tester">
 		<resource name="RAM" quantum="64M" />
-		<config verbose="no" report="no" log="yes" stop_on_error="no">
+		<config verbose="no" report="yes" log="yes" stop_on_error="yes">
 			<tests>
 				<sequential write="no" length="256M" size="1M" io_buffer="8M" batch="4"/>
 				<random write="no" length="512M" size="512K" seed="0xc0ffee" />
 			</tests>
 		</config>
 		<route>
-			<service name="ROM"> <parent/> </service>
-			<service name="PD">  <parent/> </service>
-			<service name="RM">  <parent/> </service>
-			<service name="CPU"> <parent/> </service>
-			<service name="LOG"> <parent/> </service>
-			<any-service> <any-child/> </any-service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<service name="Block"> <child name="part_block"/> </service>
+			<any-service> <parent/> </any-service>
 		</route>
 	</start>
+
 </config>
 }
 
-build_boot_image {
-	block_tester
-	imx_usdhc_drv-imx8mmq_compulab_iot_gateway.dtb
-}
+build_boot_image { }
 
 run_genode_until "child \"block_tester\" exited with exit value 0" 180
