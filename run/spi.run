@@ -5,7 +5,7 @@ create_boot_directory
 
 import_from_depot [depot_user]/src/[base_src]
 import_from_depot [depot_user]/src/init
-import_from_depot [depot_user]/src/platform_drv
+import_from_depot [depot_user]/src/imx8mm_platform_drv
 
 set build_components {
 	core
@@ -42,7 +42,7 @@ set config  {
 	</start>
 
 	<start name="platform_drv" caps="800" managing_system="yes">
-		<binary name="imx8mq_platform_drv"/>
+		<binary name="imx8mm_platform_drv"/>
 		<resource name="RAM" quantum="4M"/>
 		<provides>
 			<service name="Platform"/>
