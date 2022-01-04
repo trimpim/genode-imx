@@ -1,0 +1,15 @@
+---
+
+stages:
+  - trigger
+
+
+gapfruit:
+  stage: trigger
+  variables:
+    GENODE_IMX_REF: $CI_COMMIT_SHA
+    GENODE_IMX_URL: $CI_SERVER_HOST/$CI_PROJECT_PATH.git
+  trigger:
+    project: gapfruit/development/gapfruit
+    branch: staging
+    strategy: depend
