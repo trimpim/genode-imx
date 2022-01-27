@@ -156,14 +156,14 @@ $(foreach file,$(LX_SRC),$(eval $(call CC_OPT_LX_RULES,$(file:%.c=%))))
 # The resulting dtb file is named <driver>-<board>.dtb
 #
 
-BOARDS := imx8mmq_compulab_iot_gateway-usdhc2 \
-          imx8mmq_compulab_iot_gateway-usdhc3
+BOARDS := imx8mm_iot_gate-usdhc2 \
+          imx8mm_iot_gate-usdhc3
 
-DTS_PATH(imx8mmq_compulab_iot_gateway-usdhc2)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
-DTS_EXTRACT(imx8mmq_compulab_iot_gateway-usdhc2) := --select usdhc2
+DTS_PATH(imx8mm_iot_gate-usdhc2)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(imx8mm_iot_gate-usdhc2) := --select usdhc2
 
-DTS_PATH(imx8mmq_compulab_iot_gateway-usdhc3)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
-DTS_EXTRACT(imx8mmq_compulab_iot_gateway-usdhc3) := --select usdhc3
+DTS_PATH(imx8mm_iot_gate-usdhc3)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(imx8mm_iot_gate-usdhc3) := --select usdhc3
 
 DTS_TOOL           := $(BASE_DIR)/../../tool/dts/extract
 CUSTOM_TARGET_DEPS += $(addprefix $(INSTALL_DIR)/$(TARGET)-,$(addsuffix .dtb,$(BOARDS)))

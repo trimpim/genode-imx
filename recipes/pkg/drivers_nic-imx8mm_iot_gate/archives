@@ -1,7 +1,7 @@
-_/raw/drivers_nic-imx8mmq_compulab_iot_gateway
+_/raw/drivers_nic-imx8mm_iot_gate
 _/src/fec_nic_drv
 _/src/imx8mm_platform_drv
-_/src/imx8mmq_compulab_iot_gateway_usb_host_drv
+_/src/imx8mm_iot_gate_usb_host_drv
 _/src/report_rom
 _/src/usb_net_drv
 _/src/imx8mq_gpio_drv

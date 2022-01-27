@@ -1,10 +1,10 @@
 
-have_board imx8mmq_compulab_iot_gateway
+have_board imx8mm_iot_gate
 assert_spec arm_v8a
 
 create_boot_directory
 import_from_depot [depot_user]/src/[base_src] \
-                  [depot_user]/src/base-hw-imx8mmq_compulab_iot_gateway_drivers \
+                  [depot_user]/src/base-hw-imx8mm_iot_gate_drivers \
                   [depot_user]/src/init \
                   [depot_user]/src/usdhc \
                   [depot_user]/src/imx8mm_platform_drv \
@@ -93,7 +93,7 @@ install_config {
 			<service name="Timer"> <child name="timer"/> </service>
 			<service name="Platform"> <child name="platform_drv"/> </service>
 			<service name="ROM" label="dtb">
-				<parent label="imx_usdhc_drv-imx8mmq_compulab_iot_gateway-usdhc3.dtb"/>
+				<parent label="imx_usdhc_drv-imx8mm_iot_gate-usdhc3.dtb"/>
 			</service>
 			<any-service> <parent/> </any-service>
 		</route>
