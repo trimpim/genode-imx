@@ -1,0 +1,119 @@
+
+have_board imx8mm_iot_gate
+
+create_boot_directory
+
+set build_components { }
+set depot_archives   { }
+set boot_modules     { }
+
+lappend depot_archives [depot_user]/src/[base_src]
+lappend depot_archives [depot_user]/src/init
+lappend depot_archives [depot_user]/src/report_rom
+lappend depot_archives [depot_user]/src/imx8mm_platform_drv
+lappend depot_archives [depot_user]/src/imx8mq_i2c_drv
+lappend depot_archives [depot_user]/src/test-rtc
+
+if { [get_cmd_switch --autopilot] } {
+	lappend depot_archives [depot_user]/src/rtc_am1805_drv
+} else {
+	lappend build_components drivers/rtc/am1805
+
+	lappend boot_modules rtc_am1805_drv
+}
+
+
+set config {
+	<config>
+	<parent-provides>
+			<service name="ROM"/>
+			<service name="IRQ"/>
+			<service name="IO_MEM"/>
+			<service name="PD"/>
+			<service name="RM"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+		</parent-provides>
+
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+
+		<default caps="100"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+
+		<start name="platform_drv" caps="800" managing_system="yes">
+			<binary name="imx8mm_platform_drv"/>
+			<resource name="RAM" quantum="4M"/>
+			<provides>
+				<service name="Platform"/>
+				<service name="Regulator"/>
+			</provides>
+			<config>
+
+				<device name="i2c2">
+					<!-- I2C ctl register -->
+					<io_mem address="0x30A30000" size="0x10000"/>
+
+					<irq number="68"/>
+					<clock  name="i2c2_clk_root"
+					        driver_name="i2c2_root_clk" parent="system_pll3_clk"/>
+					<clock  name="i2c2_gate"/>
+				</device>
+
+				<policy label_prefix="imx8q_evk_i2c_drv"> <device name="i2c2"/> </policy>
+
+			</config>
+		</start>
+
+		<start name="imx8q_evk_i2c_drv">
+			<resource name="RAM" quantum="1M"/>
+			<provides> <service name="I2c"/> </provides>
+
+			<config bus_no="2">
+				<policy label_prefix="AM1805"  bus_address="0x69"/>
+			</config>
+
+			<route>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+
+		</start>
+
+		<start name="rtc_drv">
+			<binary name="rtc_am1805_drv"/>
+			<resource name="RAM" quantum="1M"/>
+			<provides> <service name="Rtc"/> </provides>
+			<route>
+				<service name="I2c"> <child name="imx8q_evk_i2c_drv" label="AM1805"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<start name="test-rtc">
+			<resource name="RAM" quantum="1M"/>
+			<route>
+				<service name="Rtc"> <child name="rtc_drv"/> </service>
+				<service name="Timer"> <child name="timer"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+	</config>
+}
+
+install_config $config
+
+import_from_depot $depot_archives
+
+if { [llength $build_components] > 0 } {
+	build $build_components
+}
+
+build_boot_image $boot_modules
+
+run_genode_until "child \"test-rtc\" exited with exit value 0" 60
