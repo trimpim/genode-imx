@@ -68,6 +68,7 @@ SRC_C   += lx_emul/shadow/mm/page_alloc.c
 SRC_C   += lx_emul/shadow/mm/percpu.c
 SRC_C   += lx_emul/shadow/mm/slab_common.c
 SRC_C   += lx_emul/shadow/mm/slub.c
+SRC_C   += lx_emul/spec/arm/start.c
 SRC_C   += lx_emul/virt_to_page.c
 
 SRC_CC  += lx_kit/console.cc
@@ -90,6 +91,7 @@ INC_DIR += $(REP_DIR)/src/include/imx8mm/lx_generated/arch/arm64/include/generat
 INC_DIR += $(REP_DIR)/src/include/imx8mm/lx_generated/arch/arm64/include/generated/uapi
 INC_DIR += $(DDE_LINUX_DIR)/src/include
 INC_DIR += $(DDE_LINUX_DIR)/src/include/spec/arm_64
+INC_DIR += $(DDE_LINUX_DIR)/src/include/spec/arm_64/lx_emul/shadow
 INC_DIR += $(DDE_LINUX_DIR)/src/include/lx_emul/shadow
 
 vpath lx_emul/common_dummies.c $(REP_DIR)/src/lib/imx8mm
@@ -126,6 +128,12 @@ CC_C_OPT += -Wno-packed-not-aligned
 INC_DIR += $(LX_BUILD_DIR)/lib
 
 CC_OPT_drivers/base/regmap/regmap  += -I$(LX_CONTRIB_DIR)/drivers/base/regmap
+
+#
+# Quirk needed as task->state has been renamed to task->__state in Linux 5.14
+# and we are on >= 5.14 in lx_emul
+#
+CC_C_OPT += -Dstate=__state
 
 LX_SRC = $(shell grep ".*\.c" $(PRG_DIR)/source.list)
 SRC_S  += $(shell grep ".*\.S" $(PRG_DIR)/source.list)

@@ -262,7 +262,8 @@ void Driver::Ccm::Root_clock::set_rate(unsigned long rate)
 
 	for (unsigned pre = 0; pre < (1<<3); pre++) {
 		for (unsigned post = 0; post < (1<<6); post++) {
-			int diff = (parent_rate / (pre+1)) / (post+1) - rate;
+			int diff = (parent_rate / (static_cast<int>(pre)+1)) / (static_cast<int>(post)+1) - 
+			           static_cast<int>(rate);
 			if (abs(diff) < abs(deviation)) {
 				pre_div   = pre;
 				post_div  = post;
