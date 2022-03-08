@@ -59,9 +59,9 @@ class Spi::Session_component : private Spi::Session_resources,
 {
 private:
 
-	Driver  &_driver;
-	size_t   _slave_select;
-	Settings _settings;
+	Driver   &_driver;
+	uint8_t   _slave_select;
+	Settings  _settings;
 
 public:
 
@@ -70,7 +70,7 @@ public:
 	                  Cap_quota    cap_quota,
 	                  Spi::Driver &driver,
 	                  size_t       io_buffer_size,
-	                  size_t       slave_select,
+	                  uint8_t      slave_select,
 	                  Settings    &session_settings)
 	:
 		Spi::Session_resources { env.pd(), env.rm(), ram_quota, cap_quota, io_buffer_size },
@@ -79,7 +79,7 @@ public:
 		_settings              { session_settings }
 	{ }
 
-	void bus_duplex_transfer(size_t buffer_size, size_t max_burst_size, bool byte_reordering) {
+	void bus_duplex_transfer(size_t buffer_size, uint16_t max_burst_size, bool byte_reordering) {
 
 		Driver::Bus_transaction bus_trxn {
 			.settings        = _settings,
@@ -113,23 +113,25 @@ private:
 	Xml_node const _config;
 
 
-	size_t _parse_policy(char const *args, Settings &settings) const
+	uint8_t _parse_policy(char const *args, Settings &settings) const
 	{
 		char device_name[64];
 		Genode::Arg_string::find_arg(args, "label").string(device_name, 64, "");
 
-		int slave_select = -1;
-		_config.for_each_sub_node([&slave_select, &settings,  &device_name] (Genode::Xml_node const &node) {
+		bool found = false;
+		uint8_t slave_select = 0;
+		_config.for_each_sub_node([&slave_select, &found, &settings,  &device_name] (Genode::Xml_node const &node) {
 			if (node.type() == "policy") {
 				Genode::String<64> label;
 				label = node.attribute_value("label_prefix", label);
 				if (label == device_name) {
-					slave_select = static_cast<int>(_parse_policy_xml_node(node, settings));
+					slave_select = static_cast<uint8_t>(_parse_policy_xml_node(node, settings));
+					found = true;
 				}
 			}
 		});
 
-		if (slave_select == -1) {
+		if (!found) {
 			Genode::warning("Session with label ",
 			                Genode::Cstring { device_name },
 			                " could not be created, no such policy.");
@@ -140,10 +142,10 @@ private:
 	}
 
 	static unsigned long _parse_policy_xml_node(Genode::Xml_node const &node, Settings &settings) {
-		settings.mode = node.attribute_value("mode", settings.mode);
-		settings.clock_idle_state = node.attribute_value("clock_idle_state", settings.clock_idle_state);
-		settings.data_lines_idle_state = node.attribute_value("data_lines_active_state", settings.data_lines_idle_state);
-		settings.ss_line_active_state = node.attribute_value("ss_line_active_state", settings.ss_line_active_state);
+		settings.mode = node.attribute_value("mode", settings.mode) & 0x3;
+		settings.clock_idle_state = node.attribute_value("clock_idle_state", settings.clock_idle_state) & 0x1;
+		settings.data_lines_idle_state = node.attribute_value("data_lines_active_state", settings.data_lines_idle_state) & 0x1;
+		settings.ss_line_active_state = node.attribute_value("ss_line_active_state", settings.ss_line_active_state) & 0x1;
 		return node.attribute_value("slave_select", static_cast<unsigned long>(0));
 	}
 
@@ -162,8 +164,8 @@ protected:
 			throw Genode::Insufficient_ram_quota();
 		}
 
-		Settings     session_settings = { };
-		size_t const slave_select     = _parse_policy(args, session_settings);
+		Settings      session_settings = { };
+		uint8_t const slave_select     = _parse_policy(args, session_settings);
 
 		return new (md_alloc()) Spi::Session_component(_env,
 		                                               Genode::Ram_quota { ram_quota },

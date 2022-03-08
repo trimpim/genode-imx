@@ -49,7 +49,7 @@ struct Spi::Transfer
 	size_t         buffer_size    = 0;
 
 	/* biggest burst size in bit */
-	size_t         max_burst_size = 8;
+	uint16_t       max_burst_size = 8;
 
 	/* swap every bytes received on a burst level (driver take care of burst alignment) */
 	bool           byte_reordering = true;
@@ -140,7 +140,7 @@ public:
 	GENODE_RPC_THROW(Rpc_duplex_transfer, void, bus_duplex_transfer,
 	                 GENODE_TYPE_LIST(Io_buffer_too_small, Bus_error),
 	                 size_t,
-	                 size_t,
+	                 uint16_t,
 	                 bool);
 	GENODE_RPC(Rpc_get_setting, Settings, settings);
 	GENODE_RPC(Rpc_set_setting, void, settings, Settings);

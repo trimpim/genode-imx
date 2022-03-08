@@ -46,8 +46,8 @@ struct Spi::Driver : Interface
 	/* Spi bus transaction */
 	struct Bus_transaction {
 		Settings       settings        = { }; /* Client session setting */
-		size_t         slave_select    = 0;   /* Slave select line. */
-		size_t         max_burst_size  = 8;
+		uint8_t        slave_select    = 0;   /* Slave select line. */
+		uint16_t       max_burst_size  = 8;
 		bool           byte_reordering = true;
 		uint8_t const *tx_buffer       = nullptr;
 		uint8_t       *rx_buffer       = nullptr;

@@ -119,7 +119,7 @@ private:
 		size_t   rx_bytes    = 0;
 	};
 
-	void _bus_enable(Settings const &settings, size_t slave_select);
+	void _bus_enable(Settings const &settings, uint8_t slave_select);
 
 	void _bus_disable();
 

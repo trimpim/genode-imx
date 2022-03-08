@@ -64,7 +64,7 @@ void Spi::Ecspi_driver::_irq_handle()
  * Bus operations *
  ******************/
 
-void Spi::Ecspi_driver::_bus_enable(Settings const &settings, size_t slave_select)
+void Spi::Ecspi_driver::_bus_enable(Settings const &settings, uint8_t slave_select)
 {
 	/* enable SPI chipset, note on imx8q only ss: 0 is available */
 	_mmio.write<Mmio::Control::Enable>(1);
@@ -158,9 +158,9 @@ void Spi::Ecspi_driver::_bus_exchange(Bus_transaction &trxn)
 		size_t const remaining_bytes = trxn.buffer_size - trxn.tx_offset;
 
 		/* align the next transfer on the maximum burst size */
-		size_t const burst_size = remaining_bytes % trxn.max_burst_size ?
-		                          remaining_bytes % trxn.max_burst_size :
-		                          trxn.max_burst_size;
+		uint16_t const burst_size = static_cast<uint16_t>(remaining_bytes % trxn.max_burst_size ?
+		                                                  remaining_bytes % trxn.max_burst_size :
+		                                                  trxn.max_burst_size);
 
 		_mmio.write<Mmio::Control::Burst_length>((burst_size * 8) - 1);
 
