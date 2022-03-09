@@ -38,7 +38,7 @@ install_config {
 		<route> <any-service> <parent/> </any-service> </route>
 	</start>
 
-	<start name="platform_drv">
+	<start name="platform_drv" managing_system="yes">
 		<binary name="imx8mm_platform_drv"/>
 		<resource name="RAM" quantum="1M"/>
 		<provides><service name="Platform"/></provides>
