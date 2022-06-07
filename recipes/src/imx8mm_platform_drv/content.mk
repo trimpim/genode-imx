@@ -1,20 +1,15 @@
-SRC_DIR = src/drivers/platform
-include $(GENODE_DIR)/repos/base/recipes/src/content.inc
+SRC_DIR = src/drivers/platform/imx8mm
+include $(GENODE_DIR)/repos/os/recipes/src/platform_drv/content.inc
 
-MIRROR_FROM_OS_DIR  := src/drivers/platform
-MIRROR_FROM_IMX_DIR := src/drivers/platform/imx8mq
-MIRROR_FROM_IMX8MM_DIR := src/drivers/platform/imx8mm
 
-content: $(MIRROR_FROM_OS_DIR) $(MIRROR_FROM_IMX_DIR) $(MIRROR_FROM_IMX8MM_DIR)
+MIRROR_FROM_IMX_DIR := src/drivers/platform/imx8mq/main.cc \
+                       src/drivers/platform/imx8mq/gpc.h \
+                       src/drivers/platform/imx8mq/ccm.h \
+                       src/drivers/platform/imx8mq/src.h
 
-$(MIRROR_FROM_OS_DIR):
-	mkdir -p $(dir $@)
-	cp -r $(GENODE_DIR)/repos/os/$@ $@
+content: $(MIRROR_FROM_IMX_DIR)
 
 $(MIRROR_FROM_IMX_DIR):
 	mkdir -p $(dir $@)
 	cp -r $(GENODE_DIR)/repos/imx/$@ $@
 
-$(MIRROR_FROM_IMX8MM_DIR):
-	mkdir -p $(dir $@)
-	cp -r $(GENODE_DIR)/repos/imx8mm/$@ $@
