@@ -11,12 +11,14 @@
  * version 2.
  */
 
+/* Genode includes */
 #include <base/attached_rom_dataspace.h>
 #include <base/component.h>
 #include <base/env.h>
 
+/* lx emulation includes */
 #include <lx_emul/init.h>
-#include <lx_emul/page_virt.h>
+#include <lx_emul/shared_dma_buffer.h>
 #include <lx_kit/env.h>
 #include <lx_kit/init.h>
 #include <lx_user/io.h>
@@ -24,25 +26,6 @@
 #include <genode_c_api/block.h>
 
 using namespace Genode;
-
-extern "C" struct genode_attached_dataspace *
-allocate_peer_buffer(size_t size)
-{
-	Attached_dataspace & ds = Lx_kit::env().memory.alloc_dataspace(size);
-
-	/*
-	 * We have to call virt_to_pages eagerly here,
-	 * to get contingous page objects registered
-	 */
-	lx_emul_virt_to_pages(ds.local_addr<void>(), size >> 12);
-	return genode_attached_dataspace_ptr(ds);
-}
-
-
-extern "C" void free_peer_buffer(struct genode_attached_dataspace * ptr)
-{
-	Lx_kit::env().memory.free(static_cast<Attached_dataspace*>(ptr));
-}
 
 
 struct Main : private Entrypoint::Io_progress_handler
@@ -70,11 +53,13 @@ struct Main : private Entrypoint::Io_progress_handler
 	Main(Env & env) : env(env)
 	{
 		Lx_kit::initialize(env);
+		env.exec_static_constructors();
 
 		genode_block_init(genode_env_ptr(env),
 		                  genode_allocator_ptr(sliced_heap),
 		                  genode_signal_handler_ptr(signal_handler),
-		                  allocate_peer_buffer, free_peer_buffer);
+		                  lx_emul_shared_dma_buffer_allocate,
+		                  lx_emul_shared_dma_buffer_free);
 
 		lx_emul_start_kernel(dtb_rom.local_addr<void>());
 
