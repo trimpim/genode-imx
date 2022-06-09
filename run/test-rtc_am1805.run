@@ -53,7 +53,7 @@ set config {
 				<service name="Platform"/>
 				<service name="Regulator"/>
 			</provides>
-			<config>
+			<config devices_rom="config">
 
 				<device name="i2c2">
 					<!-- I2C ctl register -->

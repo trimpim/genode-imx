@@ -8,8 +8,6 @@ import_from_depot [depot_user]/src/init
 import_from_depot [depot_user]/src/imx8mm_platform_drv
 
 set build_components {
-	core
-	timer
 	drivers/spi
 	test/spi_shiftregister
 }
@@ -49,7 +47,7 @@ set config  {
 			<service name="Regulator"/>
 		</provides>
 
-		<config>
+		<config devices_rom="config">
 			<device name="ecspi1">
 				<!-- ecspi1 ctl register -->
 				<io_mem address="0x30820000" size="0x1000"/>
@@ -94,12 +92,10 @@ set config  {
 install_config $config
 
 set boot_modules {
-	core
-	timer
 	imx8q_spi_drv
 	spi_shiftregister
 }
 
 build_boot_image $boot_modules
 
-run_genode_until forever
+run_genode_until "Shift register test succeed!" 30

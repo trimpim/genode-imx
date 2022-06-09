@@ -42,7 +42,7 @@ install_config {
 		<binary name="imx8mm_platform_drv"/>
 		<resource name="RAM" quantum="1M"/>
 		<provides><service name="Platform"/></provides>
-		<config>
+		<config devices_rom="config">
 
 			<device name="usdhc3" type="fsl,imx8mm-usdhc">
 				<io_mem address="0x30b60000" size="0x10000"/>
