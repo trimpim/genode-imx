@@ -3,7 +3,7 @@ REQUIRES = arm_v8a
 LIBS     = base
 INC_DIR  = $(PRG_DIR)
 
-LX_CONTRIB_DIR  := $(call select_from_ports,iot_gateway_linux)/linux
+LX_CONTRIB_DIR  := $(call select_from_ports,imx8mm_iot_gate_linux)/linux
 
 SRC_CC  += main.cc
 SRC_CC  += time.cc

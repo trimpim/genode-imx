@@ -76,7 +76,7 @@ vpath % $(DDE_LINUX_DIR)/src/lib
 # Linux kernel definitions
 #
 
-LX_CONTRIB_DIR  := $(call select_from_ports,iot_gateway_linux)/linux
+LX_CONTRIB_DIR  := $(call select_from_ports,imx8mm_iot_gate_linux)/linux
 LX_BUILD_DIR    := $(call select_from_repositories,src/include/imx8mq/lx_generated)
 
 INC_DIR += $(LX_CONTRIB_DIR)/arch/arm64/include

@@ -1,4 +1,4 @@
-PORT_DIR := $(call port_dir,$(REP_DIR)/ports/iot_gateway_linux)
+PORT_DIR := $(call port_dir,$(REP_DIR)/ports/imx8mm_iot_gate_linux)
 
 MIRROR_FROM_PORT_DIR := $(addprefix linux/,$(shell cat $(REP_DIR)/src/drivers/$(DRIVER)/imx8mm/source.list)) \
                         $(addprefix linux/,$(shell cat $(REP_DIR)/src/drivers/$(DRIVER)/imx8mm/deps.list))
