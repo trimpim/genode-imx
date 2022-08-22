@@ -4,7 +4,6 @@ assert_spec arm_v8a
 
 create_boot_directory
 import_from_depot [depot_user]/src/[base_src] \
-                  [depot_user]/src/base-hw-imx8mm_iot_gate_drivers \
                   [depot_user]/src/init \
                   [depot_user]/src/usdhc \
                   [depot_user]/src/imx8mm_platform_drv \
