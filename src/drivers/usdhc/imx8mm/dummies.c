@@ -102,11 +102,6 @@ int __invalidate_device(struct block_device * bdev,bool kill_dirty)
 }
 
 
-#include <linux/atomic.h>
-
-atomic_t __num_online_cpus;
-
-
 #include <linux/threads.h>
 
 unsigned long __per_cpu_offset[NR_CPUS] = { 0UL };
@@ -309,14 +304,6 @@ int blkcg_init_queue(struct request_queue * q)
 #include <linux/blkdev.h>
 
 void blkdev_put(struct block_device * bdev,fmode_t mode)
-{
-	lx_emul_trace(__func__);
-}
-
-
-#include <linux/rcupdate.h>
-
-void call_rcu(struct rcu_head * head,rcu_callback_t func)
 {
 	lx_emul_trace(__func__);
 }

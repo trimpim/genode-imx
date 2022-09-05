@@ -30,6 +30,11 @@ struct page * __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 #include <linux/dma-mapping.h>
 #include <linux/types.h>
 
+void vfree(const void *addr)
+{
+	(void)addr;
+	lx_emul_trace(__func__);
+}
 
 void * dmam_alloc_attrs(struct device * dev,size_t size,dma_addr_t * dma_handle,gfp_t gfp,unsigned long attrs)
 {

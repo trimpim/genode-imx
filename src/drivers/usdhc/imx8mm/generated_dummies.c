@@ -97,14 +97,6 @@ pid_t __task_pid_nr_ns(struct task_struct * task,enum pid_type type,struct pid_n
 }
 
 
-#include <linux/interrupt.h>
-
-void __tasklet_schedule(struct tasklet_struct * t)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
 #include <asm-generic/delay.h>
 
 void __udelay(unsigned long usecs)
@@ -122,14 +114,6 @@ unsigned int _parse_integer(const char * s,unsigned int base,unsigned long long 
 
 extern const char * _parse_integer_fixup_radix(const char * s,unsigned int * base);
 const char * _parse_integer_fixup_radix(const char * s,unsigned int * base)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/kernel_stat.h>
-
-void account_idle_ticks(unsigned long ticks)
 {
 	lx_emul_trace_and_stop(__func__);
 }
@@ -308,14 +292,6 @@ void * bsearch(const void * key,const void * base,size_t num,size_t size,cmp_fun
 #include <linux/kernel.h>
 
 void bust_spinlocks(int yes)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/sched/nohz.h>
-
-void calc_load_nohz_stop(void)
 {
 	lx_emul_trace_and_stop(__func__);
 }
@@ -758,14 +734,6 @@ const u8 guid_index[16] = {};
 #include <linux/capability.h>
 
 bool has_capability_noaudit(struct task_struct * t,int cap)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/sched/isolation.h>
-
-bool housekeeping_enabled(enum hk_flags flags)
 {
 	lx_emul_trace_and_stop(__func__);
 }
@@ -1682,7 +1650,7 @@ notrace void touch_softlockup_watchdog(void)
 
 notrace void touch_softlockup_watchdog_sched(void)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -1820,14 +1788,6 @@ const u8 uuid_index[16] = {};
 #include <linux/sched/wake_q.h>
 
 void wake_q_add_safe(struct wake_q_head * head,struct task_struct * task)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/sched/nohz.h>
-
-void wake_up_nohz_cpu(int cpu)
 {
 	lx_emul_trace_and_stop(__func__);
 }
