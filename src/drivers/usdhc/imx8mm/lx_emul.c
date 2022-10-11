@@ -81,6 +81,10 @@ long __sched io_schedule_timeout(long timeout)
 	return ret;
 }
 
+void __sched io_schedule(void)
+{
+	io_schedule_timeout(10);
+}
 
 #include <linux/nodemask.h>
 

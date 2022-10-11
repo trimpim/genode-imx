@@ -767,14 +767,6 @@ int insert_resource(struct resource * parent,struct resource * new)
 
 #include <linux/sched.h>
 
-void __sched io_schedule(void)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/sched.h>
-
 void io_schedule_finish(int token)
 {
 	lx_emul_trace_and_stop(__func__);
