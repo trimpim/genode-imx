@@ -61,7 +61,6 @@ kernel/sched/clock.c
 kernel/sched/completion.c
 kernel/sched/swait.c
 kernel/sched/wait.c
-kernel/sched/wait_bit.c
 kernel/smpboot.c
 kernel/softirq.c
 kernel/time/clockevents.c
@@ -84,7 +83,6 @@ kernel/time/timer.c
 kernel/time/timer_list.c
 kernel/workqueue.c
 lib/bitmap.c
-lib/cpumask.c
 lib/crc32.c
 lib/ctype.c
 lib/debug_locks.c

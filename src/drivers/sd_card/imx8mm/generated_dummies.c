@@ -1638,14 +1638,6 @@ notrace void touch_softlockup_watchdog(void)
 }
 
 
-#include <linux/nmi.h>
-
-notrace void touch_softlockup_watchdog_sched(void)
-{
-	lx_emul_trace(__func__);
-}
-
-
 #include <linux/trace_events.h>
 
 void trace_event_buffer_commit(struct trace_event_buffer * fbuffer)

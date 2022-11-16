@@ -105,4 +105,3 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 #include <linux/nodemask.h>
 
 unsigned int nr_node_ids = MAX_NUMNODES;
-

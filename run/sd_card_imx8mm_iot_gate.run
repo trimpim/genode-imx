@@ -1,0 +1,97 @@
+assert_spec arm_v8a
+
+create_boot_directory
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/imx8mm_platform_drv \
+                  [depot_user]/src/imx8mm_sd_card_drv \
+                  [depot_user]/src/init \
+                  [depot_user]/src/report_rom \
+                  [depot_user]/raw/imx8mm_iot_gate-devices
+
+build { app/block_tester }
+
+install_config {
+<config>
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+	<default caps="100"/>
+
+	<start name="imx8mm_platform_drv" managing_system="yes">
+		<resource name="RAM" quantum="2M"/>
+		<provides><service name="Platform"/></provides>
+		<config>
+			<policy label="sd_card_drv -> " info="yes">
+				<device name="usdhc3"/>
+				<device name="usdhc2"/>
+			</policy>
+		</config>
+		<route>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides><service name="Timer"/></provides>
+		<route> <any-service> <parent/> </any-service> </route>
+	</start>
+
+	<start name="report_rom">
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="Report"/> <service name="ROM"/> </provides>
+		<config verbose="yes">
+		</config>
+		<route> <any-service> <parent/> </any-service> </route>
+	</start>
+
+	<start name="sd_card_drv" caps="300">
+		<binary name="imx8mm_sd_card_drv"/>
+		<resource name="RAM" quantum="16M"/>
+		<provides><service name="Block"/></provides>
+		<config report="yes">
+			<default-policy device="mmcblk0"/>
+		</config>
+		<route>
+			<service name="ROM" label="dtb">
+				<parent label="imx8mm_sd_card_drv-imx8mm_iot_gate.dtb"/>
+			</service>
+			<service name="ROM"> <parent/> </service>
+			<service name="PD">  <parent/> </service>
+			<service name="RM">  <parent/> </service>
+			<service name="CPU"> <parent/> </service>
+			<service name="LOG"> <parent/> </service>
+			<any-service> <any-child/> </any-service>
+		</route>
+	</start>
+
+	<start name="block_tester">
+		<resource name="RAM" quantum="64M" />
+		<config verbose="no" report="no" log="yes" stop_on_error="no">
+			<tests>
+				<sequential length="256M" size="1M" io_buffer="8M" batch="4"/>
+				<sequential start="2097152" write="yes" length="256M" size="1M" io_buffer="8M" batch="4"/>
+			</tests>
+		</config>
+		<route>
+			<service name="ROM"> <parent/> </service>
+			<service name="PD">  <parent/> </service>
+			<service name="RM">  <parent/> </service>
+			<service name="CPU"> <parent/> </service>
+			<service name="LOG"> <parent/> </service>
+			<any-service> <any-child/> </any-service>
+		</route>
+	</start>
+</config> }
+
+build_boot_image { block_tester }
+
+run_genode_until "child \"block_tester\" exited with exit value 0" 30
+
+# vi: set ft=tcl :
