@@ -1,6 +1,7 @@
 <devices>
 	<device name="fec" type="fsl,imx6sx-fec">
 		<io_mem   address="0x30be0000" size="0x10000"/>
+		<irq      number="153"/>
 		<irq      number="152"/>
 		<irq      number="151"/>
 		<irq      number="150"/>

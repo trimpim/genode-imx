@@ -90,7 +90,7 @@ void __pm_pr_dbg(bool defer,const char * fmt,...)
 
 void __pm_runtime_disable(struct device * dev,bool check_resume)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -812,7 +812,7 @@ bool irq_pm_check_wakeup(struct irq_desc * desc)
 extern void irq_pm_remove_action(struct irq_desc * desc,struct irqaction * action);
 void irq_pm_remove_action(struct irq_desc * desc,struct irqaction * action)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -960,7 +960,7 @@ int kstrtoull(const char * s,unsigned int base,unsigned long long * res)
 
 void kvfree_call_rcu(struct rcu_head * head,rcu_callback_t func)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -1306,7 +1306,7 @@ void refcount_warn_saturate(refcount_t * r,enum refcount_saturation_type t)
 
 int regulator_disable(struct regulator * regulator)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -1681,7 +1681,7 @@ int suppress_printk;
 
 void synchronize_rcu(void)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
@@ -1930,7 +1930,7 @@ void unblank_screen(void)
 extern void unregister_handler_proc(unsigned int irq,struct irqaction * action);
 void unregister_handler_proc(unsigned int irq,struct irqaction * action)
 {
-	lx_emul_trace_and_stop(__func__);
+	lx_emul_trace(__func__);
 }
 
 
