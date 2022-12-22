@@ -68,22 +68,22 @@
 		<clock  name="nand_usdhc_bus_clk_root"
 		        driver_name="ahb"/>
 		<clock  name="usdhc3_clk_root"
-		        rate="200000000"
+		        parent="24m_ref_clk"
+		        rate="24000000"
 		        driver_name="per"/>
-		<clock  name="usdhc3_gate"/>
 	</device>
 
 	<device name="usdhc2" type="fsl,imx8mm-usdhc">
 		<io_mem address="0x30b50000" size="0x10000"/>
 		<irq    number="55"/>
 		<clock  name="ipg_clk_root"
-				driver_name="ipg"/>
+		        driver_name="ipg"/>
 		<clock  name="nand_usdhc_bus_clk_root"
-				driver_name="ahb"/>
+		        driver_name="ahb"/>
 		<clock  name="usdhc2_clk_root"
-				rate="200000000"
-				driver_name="per"/>
-		<clock  name="usdhc2_gate"/>
+		        parent="24m_ref_clk"
+		        rate="24000000"
+		        driver_name="per"/>
 	</device>
 
 	<device name="gpio1">
