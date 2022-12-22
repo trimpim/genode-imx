@@ -37,16 +37,8 @@ void Driver::Ccm::Frac_pll::_enable()
 
 void Driver::Ccm::Frac_pll::parent(Name parent)
 {
-	if (parent == "25m_ref_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_25M);
-		return;
-	}
-	if (parent == "27m_ref_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_27M);
-		return;
-	}
-	if (parent == "hdmi_phy_27m_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::HDMI_PHY_27M);
+	if (parent == "24m_ref_clk") {
+		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_24M);
 		return;
 	}
 	write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::CLK_P_N);
@@ -125,16 +117,8 @@ Driver::Ccm::Frac_pll::Frac_pll(Clocks & clocks, Name name, addr_t const base)
 
 void Driver::Ccm::Sccg_pll::parent(Name parent)
 {
-	if (parent == "25m_ref_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_25M);
-		return;
-	}
-	if (parent == "27m_ref_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_27M);
-		return;
-	}
-	if (parent == "hdmi_phy_27m_clk") {
-		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::HDMI_PHY_27M);
+	if (parent == "24m_ref_clk") {
+		write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::REF_CLK_24M);
 		return;
 	}
 	write<Config_reg_0::Ref_sel>(Config_reg_0::Ref_sel::CLK_P_N);
@@ -389,7 +373,6 @@ Driver::Ccm::Ccm(Genode::Env & env, Clocks & clocks)
 	sai1_clk_root.disable();
 	sai2_clk_root.disable();
 	sai3_clk_root.disable();
-	sai4_clk_root.disable();
 	sai5_clk_root.disable();
 	sai6_clk_root.disable();
 	spdif1_clk_root.disable();
@@ -439,11 +422,7 @@ Driver::Ccm::Ccm(Genode::Env & env, Clocks & clocks)
 	mipi_dsi_core_clk_root.disable();
 	mipi_dsi_phy_ref_clk_root.disable();
 	mipi_dsi_dbi_clk_root.disable();
-	/*
-	 * On imx8mm this clock needs to be enabled.
-	 * Otherwise no output is logged after starting the platform driver.
-	old_mipi_dsi_esc_clk_root.disable();
-	*/
+	usdhc3_clk_root.disable();
 	mipi_csi1_core_clk_root.disable();
 	mipi_csi1_phy_ref_clk_root.disable();
 	mipi_csi1_esc_clk_root.disable();
@@ -461,7 +440,4 @@ Driver::Ccm::Ccm(Genode::Env & env, Clocks & clocks)
 	noc_clk_root.parent("system_pll1_clk");
 	noc_clk_root.rate({800000000});
 
-	pllout.write<Pllout_monitor::Config::Ref_sel>(Pllout_monitor::Config::Ref_sel::SYS_PLL1);
-	pllout.write<Pllout_monitor::Sccg_divider::System_pll_1>(0b111);
-	pllout.write<Pllout_monitor::Config::Enable>(1);
 }
