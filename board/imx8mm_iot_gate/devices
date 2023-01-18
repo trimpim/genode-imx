@@ -7,10 +7,11 @@
 		<irq      number="150"/>
 		<property name="mii" value="rgmii-id"/>
 		<clock name="enet_axi_clk_root"/>
-		<clock name="enet_timer_clk_root"/>
-		<clock name="enet_ref_clk_root"/>
-		<clock name="enet_phy_ref_clk_root"/>
-		<clock name="enet1_gate"/>
+		<clock name="enet_timer_clk_root" driver_name="ptp"/>
+		<clock name="enet_ref_clk_root" driver_name="enet_clk_ref"/>
+		<clock name="enet_phy_ref_clk_root" driver_name="enet_out"/>
+		<clock name="enet1_gate" driver_name="ipg"/>
+		<clock name="enet1_gate" driver_name="ahb"/>
 	</device>
 
 	<device name="i2c2">
