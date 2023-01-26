@@ -772,7 +772,7 @@ struct Driver::Ccm
 	Gate ecspi1_gate     { clocks, "ecspi1_gate",     gate_base(7),   ecspi1_clk_root         };
 	Gate ecspi2_gate     { clocks, "ecspi2_gate",     gate_base(8),   ecspi2_clk_root         };
 	Gate ecspi3_gate     { clocks, "ecspi3_gate",     gate_base(9),   ecspi3_clk_root         };
-	Gate enet1_gate      { clocks, "enet1_gate",      gate_base(10),  enet_axi_clk_root       };
+	Gate enet1_gate      { clocks, "enet1_gate",      gate_base(10),  enet_ref_clk_root       };
 	Gate gpt1_gate       { clocks, "gpt1_gate",       gate_base(16),  gpt1_clk_root           };
 	Gate i2c1_gate       { clocks, "i2c1_gate",       gate_base(23),  i2c1_clk_root           };
 	Gate i2c2_gate       { clocks, "i2c2_gate",       gate_base(24),  i2c2_clk_root           };
