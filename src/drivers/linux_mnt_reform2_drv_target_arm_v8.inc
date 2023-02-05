@@ -40,3 +40,36 @@ CC_C_OPT += -Wno-pointer-sign -Wno-stringop-truncation -Wno-array-bounds -Wno-st
 CC_C_OPT += -Wno-restrict -Wno-maybe-uninitialized -Werror=date-time
 CC_C_OPT += -Werror=incompatible-pointer-types -Werror=designated-init
 CC_C_OPT += -Wno-packed-not-aligned
+
+
+CC_OPT_drivers/net/mdio/of_mdio += -DDEBUG
+CC_OPT_drivers/net/mdio/mdio-mux-multiplexer += -DDEBUG
+CC_OPT_drivers/net/mdio/mdio-mux += -DDEBUG
+CC_OPT_drivers/net/phy/phy += -DDEBUG
+CC_OPT_drivers/net/phy/at803x += -DDEBUG
+CC_OPT_drivers/net/phy/mdio-boardinfo += -DDEBUG
+CC_OPT_drivers/net/phy/mdio_bus += -DDEBUG
+CC_OPT_drivers/net/phy/swphy += -DDEBUG
+CC_OPT_drivers/net/phy/phy_device += -DDEBUG
+CC_OPT_drivers/net/phy/linkmode += -DDEBUG
+CC_OPT_drivers/net/phy/mdio_device += -DDEBUG
+CC_OPT_drivers/net/phy/phy-core += -DDEBUG
+CC_OPT_drivers/net/phy/fixed_phy += -DDEBUG
+CC_OPT_drivers/net/phy/mdio_devres += -DDEBUG
+CC_OPT_drivers/net/phy/phy-c45 += -DDEBUG
+CC_OPT_drivers/net/mii += -DDEBUG
+CC_OPT_drivers/net/ethernet/freescale/fec_main += -DDEBUG
+CC_OPT_drivers/net/ethernet/freescale/fec_ptp += -DDEBUG
+CC_OPT_net/core/datagram += -DDEBUG
+CC_OPT_net/core/dev += -DDEBUG
+CC_OPT_net/core/dev_addr_lists += -DDEBUG
+CC_OPT_net/core/link_watch += -DDEBUG
+CC_OPT_net/core/net_namespace += -DDEBUG
+CC_OPT_net/core/net-traces += -DDEBUG
+CC_OPT_net/core/skbuff += -DDEBUG
+CC_OPT_net/core/xdp += -DDEBUG
+CC_OPT_net/devres += -DDEBUG
+CC_OPT_net/ethernet/eth += -DDEBUG
+CC_OPT_net/ethtool/common += -DDEBUG
+CC_OPT_net/sched/sch_generic += -DDEBUG
+CC_OPT_net/sched/sch_mq += -DDEBUG
