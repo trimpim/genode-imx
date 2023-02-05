@@ -92,6 +92,39 @@ Bootstrap::Platform::Board::Board()
 		{ 0x30330238, 0x01 }, /* ECSPI3_MOSI set ALT 1 - TPM MOSI */
 		{ 0x3033023C, 0x01 }, /* ECSPI3_MISO set ALT 1 - TPM MISO */
 
+		/* IOMUXC pin control for ENET */
+		{ 0x30330068, 0x0  }, /* ENET_MDC set ALT 0 - ENET1_MDC */
+		{ 0x3033006C, 0x0  }, /* ENET_MDIO set ALT 0 - ENET1_MDIO */
+		{ 0x303304C0, 0x1  }, /* ENET1_MDIO_SELECT_INPUT - ENET_MDIO_ALT 0*/
+		{ 0x30330070, 0x0  }, /* ENET_TD3 set ALT 0 - ENET1_RGMMI_TD3 */
+		{ 0x30330074, 0x0  }, /* ENET_TD2 set ALT 0 - ENET1_RGMII_TD2 */
+		{ 0x30330078, 0x0  }, /* ENET_TD1 set ALT 0 - ENET1_TD1 */
+		{ 0x3033007C, 0x0  }, /* ENET_TD0 set ALT 0 - ENET1_RGMII_TD1 */
+		{ 0x30330080, 0x0  }, /* ENET_TX_CTL set ALT 0 - ENET1_TX_CTL */
+		{ 0x30330084, 0x0  }, /* ENET_TXC set ALT 0 - ENET1_RGMII_TXC */
+		{ 0x30330088, 0x0  }, /* ENET_RX_CTL set ALT 0 - ENET1_RX_CTL */
+		{ 0x3033008C, 0x0  }, /* ENET_RXC set ALT 0 - ENET1_RGMII_RXC */
+		{ 0x30330090, 0x0  }, /* ENET_RD0 set ALT 0 - ENET1_RGMII_RD0 */
+		{ 0x30330094, 0x0  }, /* ENET_RD1 set ALT 0 - ENET1_RGMII_RD1 */
+		{ 0x30330098, 0x0  }, /* ENET_RD2 set ALT 0 - ENET1_RGMII_RD2 */
+		{ 0x3033009C, 0x0  }, /* ENET_RD3 set ALT 0 - ENET1_RGMII_RD3 */
+
+		/* IOMUXC pad control for ENET */
+		{ 0x303302D0, 0x3  }, /* ENET_MDC */
+		{ 0x303302D4, 0x3  }, /* ENET_MDIO */
+		{ 0x303302D8, 0x1f }, /* ENET_TD3 */
+		{ 0x303302DC, 0x1f }, /* ENET_TD2 */
+		{ 0x303302E0, 0x1f }, /* ENET_TD1 */
+		{ 0x303302E4, 0x1f }, /* ENET_TD0 */
+		{ 0x303302E8, 0x1f }, /* ENET_TX_CTL */
+		{ 0x303302EC, 0x1f }, /* ENET_TXC */
+		{ 0x303302F0, 0x91 }, /* ENET_RX_CTL */
+		{ 0x303302F4, 0x91 }, /* ENET_RXC */
+		{ 0x303302F8, 0x91 }, /* ENET_RD0 */
+		{ 0x303302FC, 0x91 }, /* ENET_RD1 */
+		{ 0x30330300, 0x91 }, /* ENET_RD2 */
+		{ 0x30330304, 0x91 }, /* ENET_RD3 */
+
 		/* USB net control GPIOs */
 		{ 0x30330154, 0x005 },  /* SAI5_RXD3_GPIO3_IO24 set ALT 5 - HUB_RSTn */
 		{ 0x303301CC, 0x005 },  /* SAI3_RXFS_GPIO4_IO28 set ALT 5 - USB_PS_EN */
