@@ -2,7 +2,4 @@ _/raw/drivers_nic-imx8mm_iot_gate
 _/raw/imx8mm_iot_gate-devices
 _/src/fec_nic_drv
 _/src/imx8mm_platform_drv
-_/src/imx8mm_iot_gate_usb_host_drv
-_/src/report_rom
-_/src/usb_net_drv
 _/src/imx8mq_gpio_drv
