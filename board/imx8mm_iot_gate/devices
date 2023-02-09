@@ -1,23 +1,22 @@
 <devices>
 	<device name="fec" type="fsl,imx6sx-fec">
 		<io_mem   address="0x30be0000" size="0x10000"/>
-		<irq      number="153"/>
-		<irq      number="152"/>
-		<irq      number="151"/>
 		<irq      number="150"/>
+		<irq      number="151"/>
+		<irq      number="152"/>
+		<irq      number="153"/>
 		<property name="mii" value="rgmii-id"/>
-		<clock name="enet_axi_clk_root"/>
+		<clock name="enet_axi_clk_root"
+		       parent="system_pll1_div3"/>
 		<clock name="enet_timer_clk_root"
-		       parent="system_pll2_div10"
 		       rate="100000000"
+		       parent="system_pll2_div10"
 		       driver_name="ptp"/>
 		<clock name="enet_ref_clk_root"
-		       parent="24m_ref_clk"
-		       rate="24000000"
+		       parent="system_pll2_div8"
+		       rate="125000000"
 		       driver_name="enet_clk_ref"/>
 		<clock name="enet_phy_ref_clk_root"
-		       parent="24m_ref_clk"
-		       rate="24000000"
 		       driver_name="enet_out"/>
 		<clock name="enet1_gate" driver_name="ipg"/>
 		<clock name="enet1_gate" driver_name="ahb"/>
