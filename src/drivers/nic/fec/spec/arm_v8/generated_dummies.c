@@ -86,14 +86,6 @@ void __pm_pr_dbg(bool defer,const char * fmt,...)
 }
 
 
-#include <linux/pm_runtime.h>
-
-void __pm_runtime_disable(struct device * dev,bool check_resume)
-{
-	lx_emul_trace(__func__);
-}
-
-
 #include <linux/mm.h>
 
 void __put_page(struct page * page)
@@ -809,13 +801,6 @@ bool irq_pm_check_wakeup(struct irq_desc * desc)
 }
 
 
-extern void irq_pm_remove_action(struct irq_desc * desc,struct irqaction * action);
-void irq_pm_remove_action(struct irq_desc * desc,struct irqaction * action)
-{
-	lx_emul_trace(__func__);
-}
-
-
 extern bool irq_wait_for_poll(struct irq_desc * desc);
 bool irq_wait_for_poll(struct irq_desc * desc)
 {
@@ -953,14 +938,6 @@ int kstrtouint(const char * s,unsigned int base,unsigned int * res)
 int kstrtoull(const char * s,unsigned int base,unsigned long long * res)
 {
 	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/rcutree.h>
-
-void kvfree_call_rcu(struct rcu_head * head,rcu_callback_t func)
-{
-	lx_emul_trace(__func__);
 }
 
 
@@ -1299,14 +1276,6 @@ bool refcount_dec_not_one(refcount_t * r)
 void refcount_warn_saturate(refcount_t * r,enum refcount_saturation_type t)
 {
 	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/regulator/consumer.h>
-
-int regulator_disable(struct regulator * regulator)
-{
-	lx_emul_trace(__func__);
 }
 
 
@@ -1677,14 +1646,6 @@ int string_unescape(char * src,char * dst,size_t size,unsigned int flags)
 int suppress_printk;
 
 
-#include <linux/rcupdate.h>
-
-void synchronize_rcu(void)
-{
-	lx_emul_trace(__func__);
-}
-
-
 #include <linux/mfd/syscon.h>
 
 struct regmap * syscon_node_to_regmap(struct device_node * np)
@@ -1924,13 +1885,6 @@ int tso_start(struct sk_buff * skb,struct tso_t * tso)
 void unblank_screen(void)
 {
 	lx_emul_trace_and_stop(__func__);
-}
-
-
-extern void unregister_handler_proc(unsigned int irq,struct irqaction * action);
-void unregister_handler_proc(unsigned int irq,struct irqaction * action)
-{
-	lx_emul_trace(__func__);
 }
 
 
