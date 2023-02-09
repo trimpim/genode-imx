@@ -295,8 +295,8 @@ struct Driver::Ccm
 	Frac_pll vpu_pll_clk    { clocks, "vpu_pll_clk",    pll_base(0x74) };
 	Frac_pll arm_pll_clk    { clocks, "arm_pll_clk",    pll_base(0x84) };
 
-	Sccg_pll system_pll1_clk { clocks, "system_pll1_clk", sccg_pll_base(0) };
-	Sccg_pll system_pll2_clk { clocks, "system_pll2_clk", sccg_pll_base(1) };
+	Fixed_clock system_pll1_clk { clocks, "system_pll1_clk", { 800000000  } };
+	Fixed_clock system_pll2_clk { clocks, "system_pll2_clk", { 1000000000 } };
 	Sccg_pll system_pll3_clk { clocks, "system_pll3_clk", sccg_pll_base(2) };
 
 	Fixed_divider system_pll1_div20 { clocks, "system_pll1_div20", system_pll1_clk, {20} };
