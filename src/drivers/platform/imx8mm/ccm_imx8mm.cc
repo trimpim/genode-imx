@@ -11,7 +11,7 @@
  * under the terms of the GNU Affero General Public License version 3.
  */
 
-#include <ccm.h>
+#include <ccm_imx8mm.h>
 
 /******************************
  ** Frac_pll immplementation **
