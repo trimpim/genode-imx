@@ -1,5 +1,9 @@
 arch/arm64/boot/dts/freescale/imx8mq.dtsi
 arch/arm64/boot/dts/freescale/imx8mq-pinfunc.h
+arch/arm64/boot/dts/compulab/ucm-imx8m-mini.dts
+arch/arm64/boot/dts/freescale/imx8mm.dtsi
+arch/arm64/boot/dts/freescale/imx8mm-pinfunc.h
+include/dt-bindings/clock/imx8mm-clock.h
 arch/arm64/include/asm/alternative.h
 arch/arm64/include/asm/alternative-macros.h
 arch/arm64/include/asm/archrandom.h
