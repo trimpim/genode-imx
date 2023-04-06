@@ -27,8 +27,10 @@ SRC_CC  += genode_c_api/usb.cc
 vpath genode_c_api/usb.cc $(subst /genode_c_api,,$(call select_from_repositories,src/lib/genode_c_api))
 
 # Driver-specific device-tree binary data
-BOARDS                       := imx8mm_iot_gate
-DTS_PATH(imx8mm_iot_gate)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
-DTS_EXTRACT(imx8mm_iot_gate) := --select usbotg1 --select usbotg2
+BOARDS                     := iot_gate_usb1 iot_gate_usb2
+DTS_PATH(iot_gate_usb1)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(iot_gate_usb1) := --select usbotg1
+DTS_PATH(iot_gate_usb2)    := arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+DTS_EXTRACT(iot_gate_usb2) := --select usbotg2
 
 include $(REP_DIR)/src/drivers/linux_mnt_reform2_drv_target_arm_v8.inc
