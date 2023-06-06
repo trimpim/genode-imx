@@ -1,0 +1,175 @@
+From 18a1336b4875e238b73dda6fcd7b64e931c197e6 Mon Sep 17 00:00:00 2001
+From: Jean-Adrien DOMAGE <jean-adrien.domage@gapfruit.com>
+Date: Tue, 19 Oct 2021 16:16:24 +0200
+Subject: [PATCH] Update-imx8mm.dtis-for-Compulab-gateway
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi | 138 ++++++++++++++++++++++
+ 1 file changed, 138 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+index c824f26..0015be1 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+@@ -12,6 +12,7 @@
+ #include "imx8mm-pinfunc.h"
+ 
+ / {
++	compatible = "fsl,imx8mm";
+ 	interrupt-parent = <&gic>;
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
+@@ -198,6 +199,110 @@ pmu {
+ 		interrupt-affinity = <&A53_0>, <&A53_1>, <&A53_2>, <&A53_3>;
+ 	};
+ 
++	power-domains {
++		compatible = "simple-bus";
++		/* HSIO SS */
++		hsiomix_pd: hsiomix-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <0>;
++			domain-name = "hsiomix";
++			clocks = <&clk IMX8MM_CLK_USB1_CTRL_ROOT>;
++		};
++
++		pcie_pd: pcie-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <1>;
++			domain-name = "pcie";
++			parent-domains = <&hsiomix_pd>;
++			clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>;
++		};
++
++		usb_otg1_pd: usbotg1-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <2>;
++			domain-name = "usb_otg1";
++			parent-domains = <&hsiomix_pd>;
++		};
++
++		usb_otg2_pd: usbotg2-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <3>;
++			domain-name = "usb_otg2";
++			parent-domains = <&hsiomix_pd>;
++		};
++
++		/* GPU SS */
++		gpumix_pd: gpumix-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <4>;
++			domain-name = "gpumix";
++			clocks = <&clk IMX8MM_CLK_GPU_BUS_ROOT>,
++				 <&clk IMX8MM_CLK_GPU_AHB>,
++				 <&clk IMX8MM_CLK_GPU2D_ROOT>,
++				 <&clk IMX8MM_CLK_GPU3D_ROOT>;
++		};
++
++		/* VPU SS */
++		vpumix_pd: vpumix-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <5>;
++			domain-name = "vpumix";
++			clocks = <&clk IMX8MM_CLK_VPU_DEC_ROOT>;
++		};
++
++		vpu_g1_pd: vpug1-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <6>;
++			domain-name = "vpu_g1";
++			parent-domains = <&vpumix_pd>;
++			clocks = <&clk IMX8MM_CLK_VPU_G1_ROOT>;
++		};
++
++		vpu_g2_pd: vpug2-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <7>;
++			domain-name = "vpu_g2";
++			parent-domains = <&vpumix_pd>;
++			clocks = <&clk IMX8MM_CLK_VPU_G2_ROOT>;
++		};
++
++		vpu_h1_pd: vpuh1-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <8>;
++			domain-name = "vpu_h1";
++			parent-domains = <&vpumix_pd>;
++			clocks = <&clk IMX8MM_CLK_VPU_H1_ROOT>;
++		};
++
++		/* DISP SS */
++		dispmix_pd: dispmix-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <9>;
++			domain-name = "dispmix";
++			clocks = <&clk IMX8MM_CLK_DISP_ROOT>,
++				 <&clk IMX8MM_CLK_DISP_AXI_ROOT>,
++				 <&clk IMX8MM_CLK_DISP_APB_ROOT>;
++		};
++
++		mipi_pd: mipi-pd {
++			compatible = "fsl,imx8m-pm-domain";
++			#power-domain-cells = <0>;
++			domain-index = <10>;
++			domain-name = "mipi";
++			parent-domains = <&dispmix_pd>;
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>, /* Physical Secure */
+@@ -997,6 +1102,39 @@ gpmi: nand-controller@33002000{
+ 			status = "disabled";
+ 		};
+ 
++		pcie0: pcie@33800000 {
++			compatible = "fsl,imx8mm-pcie", "snps,dw-pcie";
++			reg = <0x33800000 0x400000>,
++				<0x1ff00000 0x80000>;
++			reg-names = "dbi", "config";
++			#address-cells = <3>;
++			#size-cells = <2>;
++			device_type = "pci";
++			bus-range = <0x00 0xff>;
++			ranges =  <0x81000000 0 0x00000000 0x1ff80000 0 0x00010000 /* downstream I/O 64KB */
++				   0x82000000 0 0x18000000 0x18000000 0 0x07f00000>; /* non-prefetchable memory */
++			num-lanes = <1>;
++			num-viewport = <4>;
++			interrupts = <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>; /* eDMA */
++			interrupt-names = "msi", "dma";
++			#interrupt-cells = <1>;
++			interrupt-map-mask = <0 0 0 0x7>;
++			interrupt-map = <0 0 0 1 &gic GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
++					<0 0 0 2 &gic GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
++					<0 0 0 3 &gic GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
++					<0 0 0 4 &gic GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>;
++			fsl,max-link-speed = <2>;
++			power-domains = <&pcie_pd>;
++			resets = <&src IMX8MQ_RESET_PCIEPHY>,
++				 <&src IMX8MQ_RESET_PCIE_CTRL_APPS_EN>,
++				 <&src IMX8MQ_RESET_PCIE_CTRL_APPS_CLK_REQ>,
++				 <&src IMX8MQ_RESET_PCIE_CTRL_APPS_TURNOFF>;
++			reset-names = "pciephy", "apps", "clkreq", "turnoff";
++			fsl,imx7d-pcie-phy = <&pcie_phy>;
++			status = "disabled";
++		};
++
+ 		gic: interrupt-controller@38800000 {
+ 			compatible = "arm,gic-v3";
+ 			reg = <0x38800000 0x10000>, /* GIC Dist */
+-- 
+2.25.1
+
