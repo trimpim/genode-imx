@@ -16,7 +16,9 @@ DIR(reform2) := reform2
 
 PATCHES := src/drivers/framebuffer/imx8mq/imx8mq-evk-enable-hdmi-dts.patch \
            src/drivers/usb_host/imx8mq/imx8mq-evk-enable-usb-c-dts.patch \
-           src/drivers/usb_host/imx8mq/usb_message.patch
+           src/drivers/sd_card/imx8mm/patches/0001-arch-arm64-boot-dts-add-dts-for-imx8mm_iot_gate.patch
+
+PATCH_OPT(src/drivers/sd_card/imx8mm/patches/0001-arch-arm64-boot-dts-add-dts-for-imx8mm_iot_gate.patch) := -p1 -d linux
 
 default: reform2.git linux_5.11.archive
 	cd linux; for p in ../reform2/reform2-imx8mq/template-kernel/patches/*.patch; do patch -p1 < $$p; done; cd ..

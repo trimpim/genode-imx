@@ -1,0 +1,2893 @@
+From 4eaf55e08f6f05f7c576e966eec03dec3e03921c Mon Sep 17 00:00:00 2001
+From: Jean-Adrien DOMAGE <jean-adrien.domage@gapfruit.com>
+Date: Tue, 19 Oct 2021 15:20:14 +0200
+Subject: [PATCH] Add-Compulab-DTS-files
+
+---
+ arch/arm64/boot/dts/compulab/Makefile         |  16 +
+ .../dts/compulab/mcm-imx8m-mini-rs485.dtsi    |  24 +
+ .../dts/compulab/mcm-imx8m-mini-thermal.dts   |  30 +
+ .../boot/dts/compulab/mcm-imx8m-mini.dts      | 760 ++++++++++++++++++
+ .../boot/dts/compulab/sb-iotgimx8-can.dts     | 161 ++++
+ .../boot/dts/compulab/sb-iotgimx8-ied-m4.dts  |  57 ++
+ .../dts/compulab/sb-iotgimx8-ied-wakeup.dts   |  59 ++
+ .../boot/dts/compulab/sb-iotgimx8-ied.dts     | 262 ++++++
+ .../boot/dts/compulab/sb-iotgimx8-poed.dts    |  80 ++
+ .../boot/dts/compulab/sb-iotgimx8-poedv2.dts  |  64 ++
+ arch/arm64/boot/dts/compulab/sb-iotgimx8.dts  | 293 +++++++
+ .../boot/dts/compulab/sb-mcm-imx8-rev1.dtsi   | 285 +++++++
+ .../boot/dts/compulab/sb-ucm-imx8-rev2.dts    | 192 +++++
+ .../dts/compulab/sbc-mcm-imx8m-mini-rs485.dts |  15 +
+ .../boot/dts/compulab/sbc-mcm-imx8m-mini.dts  |   9 +
+ .../boot/dts/compulab/ucm-imx8m-mini.dts      | 447 ++++++++++
+ 16 files changed, 2754 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/compulab/Makefile
+ create mode 100644 arch/arm64/boot/dts/compulab/mcm-imx8m-mini-rs485.dtsi
+ create mode 100644 arch/arm64/boot/dts/compulab/mcm-imx8m-mini-thermal.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/mcm-imx8m-mini.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-can.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-m4.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-wakeup.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-ied.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-poed.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8-poedv2.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-mcm-imx8-rev1.dtsi
+ create mode 100644 arch/arm64/boot/dts/compulab/sb-ucm-imx8-rev2.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini-rs485.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini.dts
+ create mode 100644 arch/arm64/boot/dts/compulab/ucm-imx8m-mini.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+new file mode 100644
+index 0000000..a26b660
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -0,0 +1,16 @@
++dtb-$(CONFIG_ARCH_MXC) += mcm-imx8m-mini.dtb
++dtb-$(CONFIG_ARCH_MXC) += mcm-imx8m-mini-thermal.dtb
++dtb-$(CONFIG_ARCH_MXC) += sbc-mcm-imx8m-mini.dtb
++dtb-$(CONFIG_ARCH_MXC) += sbc-mcm-imx8m-mini-rs485.dtb
++dtb-$(CONFIG_ARCH_MXC) += ucm-imx8m-mini.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-can.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-ied.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-ied-m4.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-poed.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-poedv2.dtb
++dtb-$(CONFIG_ARCH_MXC) += sb-iotgimx8-ied-wakeup.dtb
++
++always         := $(dtb-y)
++subdir-y       := $(dts-dirs)
++clean-files    := *.dtb
+diff --git a/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-rs485.dtsi b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-rs485.dtsi
+new file mode 100644
+index 0000000..0af7c75
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-rs485.dtsi
+@@ -0,0 +1,24 @@
++/delete-node/ &pinctrl_uart4;
++
++&iomuxc {
++	mcm-imx8m-mini-rs485 {
++		pinctrl_uart4: uart4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_MISO_GPIO5_IO12      0x140
++				MX8MM_IOMUXC_ECSPI2_MOSI_UART4_DCE_TX    0x140
++				MX8MM_IOMUXC_ECSPI2_SCLK_UART4_DCE_RX    0x140
++			>;
++		};
++	};
++};
++
++&uart4 { /* rs485 */
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart4>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART4>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++        linux,rs485-enabled-at-boot-time;
++        rs485-rts-active-high;
++        rts-gpios = <&gpio5 12 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-thermal.dts b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-thermal.dts
+new file mode 100644
+index 0000000..197ce8d
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini-thermal.dts
+@@ -0,0 +1,30 @@
++/*
++ * Copyright 2018 CompuLab
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++/dts-v1/;
++
++#include "mcm-imx8m-mini.dts"
++
++/ {
++	model = "CompuLab MCM i.MX8MM board (thermal)";
++	compatible = "cpl,mcm-imx8m-mini", "fsl,imx8mm";
++};
++
++&cpu_alert0 {
++	temperature = <125000>;
++};
++
++&cpu_crit0 {
++	temperature = <155000>;
++};
+diff --git a/arch/arm64/boot/dts/compulab/mcm-imx8m-mini.dts b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini.dts
+new file mode 100644
+index 0000000..d3fcb0c
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/mcm-imx8m-mini.dts
+@@ -0,0 +1,760 @@
++/*
++ * Copyright 2018 CompuLab
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++/dts-v1/;
++
++#include "../freescale/imx8mm.dtsi"
++
++/ {
++	model = "CompuLab MCM i.MX8MM board";
++	compatible = "cpl,mcm-imx8m-mini", "fsl,imx8mm";
++
++	chosen {
++		bootargs = "console=ttymxc2,115200 earlycon=ec_imx6q,0x30880000,115200";
++		stdout-patch = &uart3;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_gpio_led>;
++
++		heartbeat-led {
++			label = "Heartbeat";
++			gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "heartbeat";
++		};
++	};
++
++	reg_usdhc2_vmmc: regulator-usdhc2 {
++		compatible = "regulator-fixed";
++		regulator-name = "VSD_3V3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		startup-delay-us = <100>;
++		off-on-delay-us = <12000>;
++	};
++
++	regulator-usdhc3rst {
++		compatible = "regulator-fixed";
++		regulator-name = "usdhc3_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 16 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-fec1rst {
++		compatible = "regulator-fixed";
++		regulator-name = "fec1_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio1 10 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++		startup-delay-us = <500>;
++	};
++
++	regulator_bt_dev_wake: bt_dev_wake {
++		compatible = "regulator-fixed";
++		regulator-name = "bt_dev_wake";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 7 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++		startup-delay-us = <500>;
++	};
++
++	regulator_bt_host_wake: bt_host_wake {
++		compatible = "regulator-fixed";
++		regulator-name = "bt_host_wake";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 8 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		regulator-boot-on;
++		enable-active-high;
++		vin-supply = <&regulator_bt_dev_wake>;
++	};
++
++	backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pwm2 0 3000000 0>;
++
++		brightness-levels = <0 1 2 4 8 16 32 64 128 255>;
++		default-brightness-level = <9>;
++		status = "okay";
++	};
++
++	usdhc1_pwrseq: usdhc1_pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
++	};
++
++	modem_reset: modem-reset {
++		compatible = "gpio-reset";
++		reset-gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
++		reset-delay-us = <2000>;
++		reset-post-delay-ms = <40>;
++		#reset-cells = <0>;
++	};
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog_1>;
++
++	mcm-imx8m-mini {
++		pinctrl_hog_1: hoggrp-1 {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x19
++				MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16	0x19
++				/* BT */
++				MX8MM_IOMUXC_SD1_DATA5_GPIO2_IO7	0x19
++				MX8MM_IOMUXC_SD1_DATA6_GPIO2_IO8	0x19
++			>;
++		};
++
++		pinctrl_fec1: fec1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ENET_MDC_ENET1_MDC		0x3
++				MX8MM_IOMUXC_ENET_MDIO_ENET1_MDIO	0x3
++				MX8MM_IOMUXC_ENET_TD3_ENET1_RGMII_TD3	0x1f
++				MX8MM_IOMUXC_ENET_TD2_ENET1_RGMII_TD2	0x1f
++				MX8MM_IOMUXC_ENET_TD1_ENET1_RGMII_TD1	0x1f
++				MX8MM_IOMUXC_ENET_TD0_ENET1_RGMII_TD0	0x1f
++				MX8MM_IOMUXC_ENET_RD3_ENET1_RGMII_RD3	0x91
++				MX8MM_IOMUXC_ENET_RD2_ENET1_RGMII_RD2	0x91
++				MX8MM_IOMUXC_ENET_RD1_ENET1_RGMII_RD1	0x91
++				MX8MM_IOMUXC_ENET_RD0_ENET1_RGMII_RD0	0x91
++				MX8MM_IOMUXC_ENET_TXC_ENET1_RGMII_TXC	0x1f
++				MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC	0x91
++				MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
++				MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
++			>;
++		};
++
++		pinctrl_gpio_led: gpioledgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO12_GPIO1_IO12	0x19
++			>;
++		};
++
++
++		pinctrl_i2c1: i2c1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL			0x400001c3
++				MX8MM_IOMUXC_I2C1_SDA_I2C1_SDA			0x400001c3
++			>;
++		};
++
++		pinctrl_i2c2: i2c2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
++				MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
++			>;
++		};
++
++		pinctrl_i2c3: i2c3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
++				MX8MM_IOMUXC_I2C3_SDA_I2C3_SDA			0x400001c3
++			>;
++		};
++
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
++			>;
++		};
++
++		pinctrl_pmic: pmicirq {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO03_GPIO1_IO3		0x41
++			>;
++		};
++
++		pinctrl_uart1: uart1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX	0x140
++				MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX	0x140
++			>;
++		};
++
++		pinctrl_uart2: uart2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART2_RXD_UART2_DCE_RX	0x140
++				MX8MM_IOMUXC_UART2_TXD_UART2_DCE_TX	0x140
++			>;
++		};
++
++		pinctrl_uart3: uart3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART3_RXD_UART3_DCE_RX	0x49
++				MX8MM_IOMUXC_UART3_TXD_UART3_DCE_TX	0x49
++			>;
++		};
++
++		pinctrl_uart4: uart4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_MISO_UART4_DCE_CTS_B 0x140
++				MX8MM_IOMUXC_ECSPI2_MOSI_UART4_DCE_TX    0x140
++				MX8MM_IOMUXC_ECSPI2_SS0_UART4_DCE_RTS_B  0x140
++				MX8MM_IOMUXC_ECSPI2_SCLK_UART4_DCE_RX    0x140
++				MX8MM_IOMUXC_SD1_DATA4_GPIO2_IO6	0x19
++			>;
++		};
++
++		pinctrl_usdhc1_gpio: usdhc1grpgpio {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_RESET_B_GPIO2_IO10	0x41
++			>;
++		};
++
++		pinctrl_usdhc1: usdhc1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x190
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d0
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d0
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d0
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d0
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d0
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc1_100mhz: usdhc1grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x194
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d4
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d4
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d4
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d4
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d4
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc1_200mhz: usdhc1grp200mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x196
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d6
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d6
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d6
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d6
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d6
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++
++		pinctrl_usdhc2_gpio: usdhc2grpgpio {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
++				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x41
++				MX8MM_IOMUXC_SD2_WP_GPIO2_IO20		0x00
++			>;
++		};
++
++		pinctrl_usdhc2: usdhc2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc3: usdhc3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000190
++				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d0
++				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d0
++				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d0
++				MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d0
++				MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d0
++				MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d0
++				MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d0
++				MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d0
++				MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d0
++				MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x190
++			>;
++		};
++
++		pinctrl_usdhc3_100mhz: usdhc3grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000194
++				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d4
++				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d4
++				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d4
++				MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d4
++				MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d4
++				MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d4
++				MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d4
++				MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d4
++				MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d4
++				MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x194
++			>;
++		};
++
++		pinctrl_usdhc3_200mhz: usdhc3grp200mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000196
++				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d6
++				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d6
++				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d6
++				MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d6
++				MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d6
++				MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d6
++				MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d6
++				MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d6
++				MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d6
++				MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x196
++			>;
++		};
++
++		pinctrl_wdog: wdoggrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
++			>;
++		};
++
++		touchscreen_pins: tsgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO01_GPIO1_IO1		0x00
++			>;
++		};
++		/*
++		Copy & Paste from an MXP evk
++		As of now an external OSC1 25MHz is in use
++		Left as an example for the next revision
++		*/
++		pinctrl_csi1: csi1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO15_CCMSRCGPCMIX_CLKO2	0x59
++				MX8MM_IOMUXC_GPIO1_IO14_CCMSRCGPCMIX_CLKO1	0x59
++			>;
++		};
++
++		pinctrl_sai2: sai2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI2_MCLK_SAI2_MCLK        0xd6
++				MX8MM_IOMUXC_SAI2_TXFS_SAI2_TX_SYNC     0xd6
++				MX8MM_IOMUXC_SAI2_RXFS_SAI2_RX_SYNC     0xd6
++				MX8MM_IOMUXC_SAI2_TXC_SAI2_TX_BCLK      0xd6
++				MX8MM_IOMUXC_SAI2_TXD0_SAI2_TX_DATA0    0xd6
++				MX8MM_IOMUXC_SAI2_RXD0_SAI2_RX_DATA0    0xd6
++			>;
++		};
++
++		pinctrl_pwm_backlight: pwm_backlightgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO13_PWM2_OUT	0x03
++			>;
++		};
++
++		pinctrl_flexspi0: flexspi0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_ALE_QSPI_A_SCLK		0x1c2
++				MX8MM_IOMUXC_NAND_CE0_B_QSPI_A_SS0_B		0x82
++				MX8MM_IOMUXC_NAND_DATA00_QSPI_A_DATA0		0x82
++				MX8MM_IOMUXC_NAND_DATA01_QSPI_A_DATA1		0x82
++				MX8MM_IOMUXC_NAND_DATA02_QSPI_A_DATA2		0x82
++				MX8MM_IOMUXC_NAND_DATA03_QSPI_A_DATA3		0x82
++			>;
++		};
++	};
++};
++
++&i2c2 {
++	clock-frequency = <400000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c2>;
++	status = "okay";
++
++	rtc@69 {
++		compatible = "ab1805";
++		reg = <0x69>;
++		pagesize = <16>;
++		status = "okay";
++	};
++
++
++	pmic: bd71837@4b {
++		reg = <0x4b>;
++		compatible = "rohm,bd71837";
++		pinctrl-0 = <&pinctrl_pmic>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <3 GPIO_ACTIVE_LOW>;
++		rohm,reset-snvs-powered;
++		status = "okay";
++
++		regulators {
++			buck1_reg: BUCK1 {
++				regulator-name = "BUCK1";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++			};
++
++			buck2_reg: BUCK2 {
++				regulator-name = "BUCK2";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++				rohm,dvs-run-voltage = <1000000>;
++				rohm,dvs-idle-voltage = <900000>;
++			};
++
++			buck3_reg: BUCK3 {
++				regulator-name = "BUCK3";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck4_reg: BUCK4 {
++				regulator-name = "BUCK4";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck5_reg: BUCK5 {
++				regulator-name = "BUCK5";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck6_reg: BUCK6 {
++				regulator-name = "BUCK6";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck7_reg: BUCK7 {
++				regulator-name = "BUCK7";
++				regulator-min-microvolt = <1605000>;
++				regulator-max-microvolt = <1995000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck8_reg: BUCK8 {
++				regulator-name = "BUCK8";
++				regulator-min-microvolt = <800000>;
++				regulator-max-microvolt = <1400000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo1_reg: LDO1 {
++				regulator-name = "LDO1";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo2_reg: LDO2 {
++				regulator-name = "LDO2";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo3_reg: LDO3 {
++				regulator-name = "LDO3";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo4_reg: LDO4 {
++				regulator-name = "LDO4";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo5_reg: LDO5 {
++				regulator-name = "LDO5";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++			};
++
++			ldo6_reg: LDO6 {
++				regulator-name = "LDO6";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo7_reg: LDO7 {
++				regulator-name = "LDO7";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++			};
++		};
++	};
++
++	eeprom@50 {
++		compatible = "atmel,24c08";
++		reg = <0x50>;
++		pagesize = <16>;
++	};
++};
++
++&i2c3 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c3>;
++	status = "disabled";
++};
++
++&i2c4 {
++	clock-frequency = <400000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "disabled";
++};
++
++&snvs {
++	status = "okay";
++};
++
++&snvs_pwrkey {
++	status = "okay";
++};
++
++&fec1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_fec1>;
++	phy-mode = "rgmii-id";
++	phy-handle = <&ethphy0>;
++	fsl,magic-packet;
++	fsl,rgmii_rxc_dly;
++	status = "okay";
++
++	mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		ethphy0: ethernet-phy@0 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <0>;
++			at803x,led-act-blind-workaround;
++			at803x,eee-okay;
++			at803x,vddio-1p8v;
++		};
++	};
++};
++
++&uart1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart1>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART1>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++	status = "okay";
++};
++
++&uart2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart2>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART2>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++	status = "okay";
++};
++
++&uart3 { /* console */
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart3>;
++	status = "okay";
++};
++
++&uart4 { /* bluetooth */
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart4>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART4>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++	fsl,uart-has-rtscts;
++	resets = <&modem_reset>;
++	status = "okay";
++};
++
++&usdhc1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
++	bus-width = <4>;
++	no-1-8-v;
++	non-removable;
++	pm-ignore-notify;
++	cap-power-off-card;
++	status = "okay";
++	mmc-pwrseq = <&usdhc1_pwrseq>;
++
++	brcmf: wifi@1 {
++		reg = <1>;
++		compatible = "brcm,bcm4329-fmac";
++		interrupt-parent = <&gpio2>;
++		interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "host-wake";
++	};
++};
++
++&usdhc2 {
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
++	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio2 20 GPIO_ACTIVE_HIGH>;
++	no-1-8-v;
++	bus-width = <4>;
++	vmmc-supply = <&reg_usdhc2_vmmc>;
++	status = "okay";
++};
++
++&usdhc3 {
++	compatible = "fsl,imx8mq-usdhc\0fsl,imx7d-usdhc";
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc3>;
++	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
++	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
++	bus-width = <8>;
++	non-removable;
++	status = "okay";
++};
++
++&wdog1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdog>;
++	fsl,ext-reset-output;
++	status = "okay";
++};
++
++&A53_0 {
++	arm-supply = <&buck2_reg>;
++};
++
++&gpu {
++	status = "okay";
++};
++
++&vpu_g1 {
++	status = "okay";
++};
++
++&vpu_g2 {
++	status = "okay";
++};
++
++&vpu_h1 {
++	status = "okay";
++};
++
++&usbotg1 {
++	dr_mode = "otg";
++	hnp-disable;
++	srp-disable;
++	status = "okay";
++};
++
++&usbotg2 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&sai2 {
++	#sound-dai-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_sai2>;
++	assigned-clocks = <&clk IMX8MM_CLK_SAI2>;
++	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
++	assigned-clock-rates = <49152000>;
++	clocks = <&clk IMX8MM_CLK_SAI2_IPG>, <&clk IMX8MM_CLK_DUMMY>,
++		<&clk IMX8MM_CLK_SAI2_ROOT>, <&clk IMX8MM_CLK_DUMMY>,
++		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_AUDIO_PLL1_OUT>,
++		<&clk IMX8MM_AUDIO_PLL2_OUT>;
++	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
++	fsl,sai-asynchronous;
++	status = "okay";
++};
++
++&lcdif {
++	status = "okay";
++};
++
++&pwm2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm_backlight>;
++	status = "okay";
++};
++
++&cpu_alert0 {
++	temperature = <105000>;
++};
++&cpu_crit0 {
++	temperature = <115000>;
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-can.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-can.dts
+new file mode 100644
+index 0000000..43a363f
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-can.dts
+@@ -0,0 +1,161 @@
++/*
++ * Copyright (C) 2020 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "sb-iotgimx8.dts"
++
++/ {
++	model = "CompuLab SB-IOTGIMX8 board + CAN bus extension";
++	compatible = "sb-iotgimx8-can", "sb-iotgimx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	clocks {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		clk40m: clk@1 {
++			compatible = "fixed-clock";
++			reg = <1>;
++			#clock-cells = <0>;
++			clock-frequency = <40000000>;
++			clock-output-names = "clk40m";
++		};
++	};
++
++	regulator-can0term {
++		compatible = "regulator-fixed";
++		regulator-name = "can0_term";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 8 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++
++	regulator-can1term {
++		compatible = "regulator-fixed";
++		regulator-name = "can1_term";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 9 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&ecspi2 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi2 &pinctrl_ecspi2_cs>;
++	cs-gpios = <&gpio5 13 GPIO_ACTIVE_LOW>;
++	status = "okay";
++
++	can0: can@0 {
++		compatible = "microchip,mcp2518fd";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_can0>;
++		interrupt-parent = <&gpio5>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <20000000>;
++		clocks = <&clk40m>;
++	};
++};
++
++&ecspi3 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
++	cs-gpios = <&gpio5 25 GPIO_ACTIVE_LOW>;
++	status = "okay";
++
++	can1: can@0 {
++		compatible = "microchip,mcp2518fd";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_can1>;
++		interrupt-parent = <&gpio5>;
++		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <20000000>;
++		clocks = <&clk40m>;
++	};
++};
++
++&iomuxc {
++	sb-ucm-imx8-can {
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_ecspi2: ecspi2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK	0x02
++				MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI	0x02
++				MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi2_cs: ecspi2_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13	0x40000
++			>;
++		};
++
++		pinctrl_ecspi3: ecspi3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART1_RXD_ECSPI3_SCLK	0x02
++				MX8MM_IOMUXC_UART1_TXD_ECSPI3_MOSI	0x02
++				MX8MM_IOMUXC_UART2_RXD_ECSPI3_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi3_cs: ecspi3_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART2_TXD_GPIO5_IO25	0x40000
++			>;
++		};
++
++
++		pinctrl_can0: can0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI3_TXC_GPIO5_IO0		0x00
++				MX8MM_IOMUXC_NAND_DATA02_GPIO3_IO8	0x00
++			>;
++		};
++
++		pinctrl_can1: can1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART4_RXD_GPIO5_IO28	0x00
++				MX8MM_IOMUXC_NAND_DATA03_GPIO3_IO9	0x00
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-m4.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-m4.dts
+new file mode 100644
+index 0000000..14ee90e
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-m4.dts
+@@ -0,0 +1,57 @@
++/*
++ * Copyright (C) 2021 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "sb-iotgimx8-ied.dts"
++
++/ {
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		m4_reserved: m4@0x80000000 {
++			no-map;
++			reg = <0 0x80000000 0 0x1000000>;
++		};
++
++		vdev0vring0: vdev0vring0@b8000000 {
++			compatible = "shared-dma-pool";
++			reg = <0 0xb8000000 0 0x8000>;
++			no-map;
++		};
++
++		vdev0vring1: vdev0vring1@b8008000 {
++			compatible = "shared-dma-pool";
++			reg = <0 0xb8008000 0 0x8000>;
++			no-map;
++		};
++
++		vdevbuffer: vdevbuffer@b8400000 {
++			compatible = "shared-dma-pool";
++			reg = <0 0xb8400000 0 0x100000>;
++			no-map;
++		};
++	};
++};
++
++&rpmsg{
++	/*
++	 * 64K for one rpmsg instance:
++	 * --0xb8000000~0xb800ffff: pingpong
++	 */
++	vdev-nums = <1>;
++	reg = <0x0 0xb8000000 0x0 0x10000>;
++	memory-region = <&vdevbuffer>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-wakeup.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-wakeup.dts
+new file mode 100644
+index 0000000..db1bf57
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied-wakeup.dts
+@@ -0,0 +1,59 @@
++/*
++ * Copyright (C) 2021 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include <dt-bindings/input/gpio-keys.h>
++#include "sb-iotgimx8-ied.dts"
++
++/ {
++	gpio-keys {
++		compatible = "gpio-keys";
++
++		 in0 {
++			label = "in0";
++			gpios = <&gpio3 0 GPIO_ACTIVE_HIGH>;
++			linux,input-type = <EV_KEY>;
++			linux,code = <KEY_0>;
++			wakeup-source;
++			debounce-interval = <1000>;
++			wakeup-event-action = <EV_ACT_ASSERTED>;
++		};
++		in1 {
++			label = "in1";
++			gpios = <&gpio3 1 GPIO_ACTIVE_LOW>;
++			linux,input-type = <EV_KEY>;
++			linux,code = <KEY_1>;
++			wakeup-source;
++			debounce-interval = <1000>;
++			wakeup-event-action = <EV_ACT_DEASSERTED>;
++		};
++		in2 {
++			label = "in2";
++			gpios = <&gpio3 6 GPIO_ACTIVE_LOW>;
++			linux,input-type = <EV_KEY>;
++			linux,code = <KEY_2>;
++			wakeup-source;
++			debounce-interval = <1000>;
++			wakeup-event-action = <EV_ACT_DEASSERTED>;
++		};
++		in3 {
++			label = "in3";
++			gpios = <&gpio3 7 GPIO_ACTIVE_LOW>;
++			linux,input-type = <EV_KEY>;
++			linux,code = <KEY_3>;
++			wakeup-source;
++			debounce-interval = <1000>;
++			wakeup-event-action = <EV_ACT_DEASSERTED>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied.dts
+new file mode 100644
+index 0000000..7c80264
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-ied.dts
+@@ -0,0 +1,262 @@
++/*
++ * Copyright (C) 2020 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "sb-iotgimx8.dts"
++
++/ {
++	model = "CompuLab SB-IOTGIMX8 board + IED-BASE extension";
++	compatible = "sb-iotgimx8-ied", "sb-iotgimx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	clocks {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		clk40m: clk@1 {
++			compatible = "fixed-clock";
++			reg = <1>;
++			#clock-cells = <0>;
++			clock-frequency = <40000000>;
++			clock-output-names = "clk40m";
++		};
++	};
++
++	regulatot-tpm0-rst {
++		compatible = "regulator-fixed";
++		regulator-name = "tpm0-rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 31 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-tpm1-rst {
++		compatible = "regulator-fixed";
++		regulator-name = "tpm1-rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 31 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	vref_adc: regulator-vref-adc {
++		compatible = "regulator-fixed";
++		regulator-name = "vref_adc";
++		regulator-min-microvolt = <2400000>;
++		regulator-max-microvolt = <2400000>;
++		regulator-always-on;
++	};
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	pca9555:pca9555@22 {
++		compatible = "nxp,pca9555";
++		gpio-controller;
++		#gpio-cells = <2>;
++		reg = <0x22>;
++	};
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&uart2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart2>;
++
++};
++
++&uart4 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart4>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART4>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++};
++
++&ecspi2 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi2 &pinctrl_ecspi2_cs>;
++	cs-gpios = <&gpio5 13 GPIO_ACTIVE_LOW>;
++
++	can0: can@0 {
++		compatible = "microchip,mcp2518fd";
++		reg = <0>;
++		microchip,rx-int = <&gpio4 31 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_can0>;
++		interrupt-parent = <&gpio5>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <20000000>;
++		clocks = <&clk40m>;
++		status = "disabled";
++	};
++	tpm0: tpm@0 {
++		compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_tpm0>;
++		spi-max-frequency = <5000000>;
++		status = "disabled";
++	};
++	adc0: adc@0 {
++		compatible = "maxim,max11108";
++		reg = <0>;
++		vref-supply = <&vref_adc>;
++		spi-max-frequency = <20000000>;
++		status = "disabled";
++	};
++};
++
++&ecspi3 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi3 &pinctrl_ecspi3_cs>;
++	cs-gpios = <&gpio5 25 GPIO_ACTIVE_LOW>;
++
++	can1: can@0 {
++		compatible = "microchip,mcp2518fd";
++		reg = <0>;
++		microchip,rx-int = <&gpio5 28 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_can1>;
++		interrupt-parent = <&gpio5>;
++		interrupts = <29 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <20000000>;
++		clocks = <&clk40m>;
++		status = "disabled";
++	};
++	tpm1: tpm@0 {
++		compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_tpm1>;
++		spi-max-frequency = <5000000>;
++		status = "disabled";
++	};
++	adc1: adc@0 {
++		compatible = "maxim,max11108";
++		reg = <0>;
++		vref-supply = <&vref_adc>;
++		spi-max-frequency = <20000000>;
++		status = "disabled";
++	};
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog_sb_iotgimx8_ied>;
++
++	sb-iotgimx8-ied {
++		pinctrl_hog_sb_iotgimx8_ied: hoggrp-sb-iotgimx8-ied {
++			fsl,pins = <
++				/* IED-DI4O4 */
++				MX8MM_IOMUXC_NAND_ALE_GPIO3_IO0		0x100 /* IN 0 */
++				MX8MM_IOMUXC_NAND_CE0_B_GPIO3_IO1	0x100 /* IN 1 */
++				MX8MM_IOMUXC_NAND_DATA00_GPIO3_IO6	0x100 /* IN 2 */
++				MX8MM_IOMUXC_NAND_DATA01_GPIO3_IO7	0x100 /* IN 3 */
++				MX8MM_IOMUXC_NAND_DATA02_GPIO3_IO8	0x100 /* OUT 0 */
++				MX8MM_IOMUXC_NAND_DATA03_GPIO3_IO9	0x100 /* OUT 1 */
++			>;
++		};
++
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_uart2: uart2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI3_TXFS_UART2_DCE_RX	0x140
++				MX8MM_IOMUXC_SAI3_TXC_UART2_DTE_TX	0x140
++			>;
++		};
++
++		pinctrl_uart4: uart4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX	0x140
++				MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX	0x140
++			>;
++		};
++
++		pinctrl_ecspi2: ecspi2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK	0x02
++				MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI	0x02
++				MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi2_cs: ecspi2_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13	0x40000
++			>;
++		};
++
++		pinctrl_ecspi3: ecspi3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART1_RXD_ECSPI3_SCLK	0x02
++				MX8MM_IOMUXC_UART1_TXD_ECSPI3_MOSI	0x02
++				MX8MM_IOMUXC_UART2_RXD_ECSPI3_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi3_cs: ecspi3_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART2_TXD_GPIO5_IO25	0x40000
++			>;
++		};
++
++
++		pinctrl_can0: can0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI3_TXC_GPIO5_IO0		0x00
++				MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31       0x00
++			>;
++		};
++
++		pinctrl_can1: can1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART4_TXD_GPIO5_IO29	0x00
++				MX8MM_IOMUXC_UART4_RXD_GPIO5_IO28	0x00
++			>;
++		};
++
++		pinctrl_tpm0: tpm0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31       0x0
++			>;
++		};
++
++		pinctrl_tpm1: tpm1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART4_RXD_GPIO5_IO28	0x0
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-poed.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-poed.dts
+new file mode 100644
+index 0000000..6159170
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-poed.dts
+@@ -0,0 +1,80 @@
++/*
++ * Copyright (C) 2020 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "sb-iotgimx8.dts"
++
++/ {
++	model = "CompuLab SB-IOTGIMX8 board + IE-POED extension";
++	compatible = "sb-iotgimx8-poed", "sb-iotgimx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&ecspi2 {
++	/delete-property/ dmas;
++	/delete-property/ dma-names;
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi2 &pinctrl_ecspi2_cs>;
++	cs-gpios = <&gpio5 13 GPIO_ACTIVE_LOW>;
++	status = "okay";
++
++	encx24j600@0 {
++		compatible = "microchip,encx24j600";
++		spi-max-frequency = <40000000>;
++		reg = <0>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <1 IRQ_TYPE_EDGE_FALLING>;
++	};
++};
++
++&iomuxc {
++	sb-iotgimx8-poed {
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_ecspi2: ecspi2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK	0x02
++				MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI	0x02
++				MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi2_cs: ecspi2_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13	0x4000
++				MX8MM_IOMUXC_NAND_CE0_B_GPIO3_IO1	0x04146
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8-poedv2.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8-poedv2.dts
+new file mode 100644
+index 0000000..db46ab7
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8-poedv2.dts
+@@ -0,0 +1,64 @@
++/*
++ * Copyright (C) 2021 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "sb-iotgimx8.dts"
++
++/ {
++	model = "CompuLab SB-IOTGIMX8 board + IE-POED-v2 extension";
++	compatible = "sb-iotgimx8-poedv2", "sb-iotgimx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	regulator-usbmux-mod {
++		compatible = "regulator-fixed";
++		regulator-name = "usbmux_mod";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	eeprom@51 {
++		compatible = "atmel,24c02";
++		reg = <0x51>;
++		pagesize = <16>;
++	};
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog_sb_iotgimx8_poedv2>;
++
++	sb-iotgimx8-poedv2 {
++		pinctrl_hog_sb_iotgimx8_poedv2: hoggrp_sb-iotgimx8-poedv2 {
++			fsl,pins = <
++				/* USB_MUX */
++				MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1		0x00000140
++			>;
++		};
++
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA		0x400001c3
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8.dts b/arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+new file mode 100644
+index 0000000..55d05c9
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8.dts
+@@ -0,0 +1,293 @@
++/*
++ * Copyright (C) 2020 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "ucm-imx8m-mini.dts"
++
++/ {
++	model = "CompuLab SB-IOTGIMX8 board";
++	compatible = "sb-iotgimx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	regulator-usbhub-ena {
++		compatible = "regulator-fixed";
++		regulator-name = "usbhub_ena";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 28 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-usbhub-rst {
++		compatible = "regulator-fixed";
++		regulator-name = "usbhub_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 24 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-uart1-mode {
++		compatible = "regulator-fixed";
++		regulator-name = "uart1_mode";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 26 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++	};
++
++	regulator-uart1-duplex {
++		compatible = "regulator-fixed";
++		regulator-name = "uart1_duplex";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 27 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-uart1-shdn {
++		compatible = "regulator-fixed";
++		regulator-name = "uart1_shdn";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio5 5 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-uart1-trmen {
++		compatible = "regulator-fixed";
++		regulator-name = "uart1_trmen";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 25 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++
++	regulator-usdhc2_v {
++		compatible = "regulator-fixed";
++		regulator-name = "usdhc2_v";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio1 4 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-usdhc2_rst {
++		compatible = "regulator-fixed";
++		regulator-name = "usdhc2_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-mpcie2_rst {
++		compatible = "regulator-fixed";
++		regulator-name = "mpcie2_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 22 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-mpcie2lora_dis {
++		compatible = "regulator-fixed";
++		regulator-name = "mpcie2lora_dis";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 21 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	pcie0_refclk: pcie0-refclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <100000000>;
++	};
++};
++
++&uart1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart1 &pinctrl_uart1_gpio>;
++	assigned-clocks = <&clk IMX8MM_CLK_UART1>;
++	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
++	linux,rs485-enabled-at-boot-time;
++	rs485-rts-active-high;
++	rts-gpios = <&gpio4 24 GPIO_ACTIVE_LOW>;
++	status = "okay";
++};
++
++&i2c1 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c1>;
++	status = "okay";
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&ecspi1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi1 &pinctrl_ecspi1_cs>;
++	cs-gpios = <&gpio5 9 GPIO_ACTIVE_LOW>;
++	status = "okay";
++};
++
++&usbotg1 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&usbotg2 {
++	dr_mode = "host";
++	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	usb9514@1 {
++		compatible = "usb424,9514";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_usb9514>;
++		reg = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		ethernet: usbether@1 {
++			compatible = "usb424,ec00";
++			reg = <1>;
++		};
++	};
++};
++
++&usdhc1 {
++	status = "disabled";
++};
++
++&usdhc2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usdhc2>;
++	bus-width = <4>;
++	mmc-ddr-1_8v;
++	non-removable;
++	status = "okay";
++};
++
++&pcie0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pcie0>;
++	reset-gpio = <&gpio3 20 GPIO_ACTIVE_LOW>;
++	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
++		 <&clk IMX8MM_CLK_PCIE1_AUX>,
++		 <&clk IMX8MM_CLK_PCIE1_PHY>,
++		 <&pcie0_refclk>;
++	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
++	ext_osc = <1>;
++	status = "okay";
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog_sb_iotgimx8>;
++
++	sb-iotgimx8 {
++		pinctrl_hog_sb_iotgimx8: hoggrp_sb-iotgimx8 {
++			fsl,pins = <
++				/* mPCIe2 */
++				MX8MM_IOMUXC_SAI5_RXD0_GPIO3_IO21	0x140 /* mPCIe2_LORA_DISABLE */
++				MX8MM_IOMUXC_SAI5_RXD1_GPIO3_IO22	0x140 /* mPCIe2_PERSTn */
++			>;
++		};
++
++		pinctrl_uart1: uart1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI2_RXC_UART1_DCE_RX	0x140
++				MX8MM_IOMUXC_SAI2_RXFS_UART1_DCE_TX	0x140
++				MX8MM_IOMUXC_SAI2_TXFS_GPIO4_IO24	0x140 /* RTS */
++				MX8MM_IOMUXC_SAI2_RXD0_UART1_DTE_RTS_B	0x140 /* CTS */
++			>;
++		};
++
++		pinctrl_uart1_gpio: uart1gpiogrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI2_TXD0_GPIO4_IO26	0x000 /* RS_485_232_SEL */
++				MX8MM_IOMUXC_SAI2_MCLK_GPIO4_IO27	0x140 /* RS_485_H/F_SEL */
++				MX8MM_IOMUXC_SPDIF_EXT_CLK_GPIO5_IO5	0x140 /* SHDN */
++				MX8MM_IOMUXC_SAI2_TXC_GPIO4_IO25	0x140 /* RS_485_TRMEN */
++			>;
++		};
++
++		pinctrl_i2c1: i2c1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C1_SDA_I2C1_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_ecspi1: ecspi1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK	0x82
++				MX8MM_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI	0x82
++				MX8MM_IOMUXC_ECSPI1_MISO_ECSPI1_MISO	0x82
++			>;
++		};
++
++		pinctrl_ecspi1_cs: ecspi1cs {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI1_SS0_GPIO5_IO9	0x40000
++			>;
++		};
++
++		pinctrl_usb9514: usb9514grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI3_RXFS_GPIO4_IO28	0x140 /* USB_PS_EN */
++				MX8MM_IOMUXC_SAI5_RXD3_GPIO3_IO24	0x140 /* HUB_RSTn */
++			>;
++		};
++
++		pinctrl_usdhc2: usdhc2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
++				MX8MM_IOMUXC_GPIO1_IO04_GPIO1_IO4	0x1d0 /* SD2_VSEL */
++				MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41  /* EMMC_RST */
++			>;
++		};
++
++		pinctrl_pcie0: pcie0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI5_RXC_GPIO3_IO20	0x140
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-mcm-imx8-rev1.dtsi b/arch/arm64/boot/dts/compulab/sb-mcm-imx8-rev1.dtsi
+new file mode 100644
+index 0000000..1a9db12
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-mcm-imx8-rev1.dtsi
+@@ -0,0 +1,285 @@
++/*
++ * Copyright (C) 2018 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "../freescale/imx8mm-pinfunc.h"
++
++/ {
++	simple_sound: sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,name = "mcm-imx8m-mini";
++		simple-audio-card,widgets =
++			"Headphone", "Headphone Jack",
++			"Line", "Line Out",
++			"Microphone", "Mic Jack",
++			"Line", "Line In";
++		simple-audio-card,routing =
++			"Headphone Jack", "RHPOUT",
++			"Headphone Jack", "LHPOUT",
++			"MICIN", "Mic Bias",
++			"Mic Bias", "Mic Jack";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,bitclock-master = <&sound_master>;
++		simple-audio-card,frame-master = <&sound_master>;
++
++		sound_master: simple-audio-card,cpu {
++			sound-dai = <&sai2>;
++			system-clock-frequency = <0>;
++			system-clock-direction = "out";
++		};
++
++		sound_codec: simple-audio-card,codec {
++			sound-dai = <&wm8731>;
++			system-clock-direction = "in";
++			system-clock-type = "mclk";
++		};
++	};
++
++	clocks {
++		clk40m: clk@1 {
++			compatible = "fixed-clock";
++			#reg = <1>;
++			#clock-cells = <0>;
++			clock-frequency = <40000000>;
++			clock-output-names = "clk40m";
++		};
++	};
++
++	regulator-can0term@0 {
++		compatible = "regulator-fixed";
++		regulator-name = "can0_term0";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 2 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++
++	regulator-can0term@1 {
++		compatible = "regulator-fixed";
++		regulator-name = "can0_term1";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio4 12 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++
++	uart4_sel: uart4sel {
++		compatible = "regulator-fixed";
++		regulator-name = "uart4_sel";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&pca9555 14 GPIO_ACTIVE_LOW>;
++		regulator-always-on;
++		enable-active-low;
++	};
++
++	pcie0_refclk: pcie0-refclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <100000000>;
++	};
++};
++
++&iomuxc {
++	sb-mcm-imx8 {
++		pinctrl_ecspi1: ecspi1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK	0x02
++				MX8MM_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI	0x02
++				MX8MM_IOMUXC_ECSPI1_MISO_ECSPI1_MISO	0x102
++			>;
++		};
++
++		pinctrl_ecspi1_cs: ecspi1_csgrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ECSPI1_SS0_GPIO5_IO9	0x40000
++			>;
++		};
++
++		pinctrl_can0: can0grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SAI1_TXFS_GPIO4_IO10	0x00
++				MX8MM_IOMUXC_SAI1_TXD0_GPIO4_IO12	0x00
++				MX8MM_IOMUXC_SAI1_RXD0_GPIO4_IO2	0x00
++			>;
++		};
++	};
++};
++
++&ecspi1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi1 &pinctrl_ecspi1_cs>;
++	cs-gpios = <&gpio5 9 GPIO_ACTIVE_LOW>;
++	status = "okay";
++
++	can0: can@0 {
++		compatible = "microchip,mcp2518fd";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_can0>;
++		interrupt-parent = <&gpio4>;
++		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
++		spi-max-frequency = <10000000>;
++		clocks = <&clk40m>;
++	};
++};
++
++&pcie0 {
++	reset-gpio = <&pca9555 0 GPIO_ACTIVE_LOW>;
++	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
++		 <&clk IMX8MM_CLK_PCIE1_AUX>,
++		 <&clk IMX8MM_CLK_PCIE1_PHY>,
++		 <&pcie0_refclk>;
++	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
++	ext_osc = <1>;
++	status = "okay";
++};
++
++&i2c1 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c1>;
++	status = "okay";
++
++	pca9555:pca9555@20 {
++		compatible = "nxp,pca9555";
++		gpio-controller;
++		#gpio-cells = <2>;
++		reg = <0x20>;
++	};
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&i2c4 {
++	clock-frequency = <400000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	wm8731: wm8731@1a {
++		#sound-dai-cells = <0>;
++		compatible = "wlf,wm8731";
++		reg = <0x1a>;
++		status = "okay";
++	};
++
++	ov5640_mipi: ov5640_mipi@3c {
++		compatible = "ovti,ov5640_mipi";
++		reg = <0x3c>;
++		status = "okay";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_csi1>;
++		clocks = <&clk IMX8MM_CLK_CLKO1>;
++		clock-names = "csi_mclk";
++		assigned-clocks = <&clk IMX8MM_CLK_CLKO1>;
++		assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
++		assigned-clock-rates = <0>, <24000000>;
++		csi_id = <0>;
++		/*
++		To be looked into & fixed
++		As of now the device is alwas out of reset & under the power
++		*/
++		pwn-gpios = <&pca9555 8 GPIO_ACTIVE_LOW>;
++		rst-gpios = <&pca9555 3 GPIO_ACTIVE_HIGH>;
++
++		mclk = <24000000>;
++		mclk_source = <0>;
++		port {
++			ov5640_mipi1_ep: endpoint {
++				remote-endpoint = <&mipi1_sensor_ep>;
++			};
++		};
++	};
++	goodix_ts@5d {
++		compatible = "goodix,gt911";
++		reg = <0x5d>;
++
++		interrupt-parent = <&gpio1>;
++		interrupts = <1 IRQ_TYPE_LEVEL_HIGH>;
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&touchscreen_pins>;
++
++		irq-gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&pca9555 4 GPIO_ACTIVE_HIGH>;
++		status = "okay";
++	};
++
++};
++
++&mipi_csi_1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++	port {
++		mipi1_sensor_ep: endpoint@1 {
++			remote-endpoint = <&ov5640_mipi1_ep>;
++			data-lanes = <2>;
++			csis-hs-settle = <13>;
++			csis-clk-settle = <2>;
++			csis-wclk;
++		};
++
++		csi1_mipi_ep: endpoint@2 {
++			remote-endpoint = <&csi1_ep>;
++		};
++	};
++};
++
++&csi1_bridge {
++    fsl,mipi-mode;
++    status = "okay";
++
++    port {
++        csi1_ep: endpoint {
++            remote-endpoint = <&csi1_mipi_ep>;
++        };
++    };
++};
++
++&mipi_dsi {
++	status = "okay";
++	panel: panel@0 {
++		compatible = "startek,kd050hdfia020";
++		reg = <0>;
++		reset-gpio = <&pca9555 6 GPIO_ACTIVE_LOW>;
++		dsi-lanes = <4>;
++		status = "okay";
++	};
++};
++
++&flexspi {
++	compatible = "fsl,imx8mm-flexspi";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flexspi0>;
++	status = "okay";
++
++	qspiflash0: qspiflash@0 {
++		reg = <0>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "w25x16", "jedec,spi-nor";
++		spi-max-frequency = <80000000>;
++		spi-nor,ddr-quad-read-dummy = <6>;
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sb-ucm-imx8-rev2.dts b/arch/arm64/boot/dts/compulab/sb-ucm-imx8-rev2.dts
+new file mode 100644
+index 0000000..2d95559
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sb-ucm-imx8-rev2.dts
+@@ -0,0 +1,192 @@
++/*
++ * Copyright (C) 2018 CompuLab Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include "../freescale/imx8mm-pinfunc.h"
++
++/ {
++	model = "CompuLab SB-UCM-iMX8 board";
++	compatible = "sb-ucm-imx8", "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	reg_usdhc2_vmmc: regulator-usdhc2 {
++		compatible = "regulator-fixed";
++		regulator-name = "VSD_3V3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		startup-delay-us = <100>;
++		off-on-delay-us = <12000>;
++	};
++};
++
++&i2c1 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c1>;
++	status = "okay";
++
++	pca9555:pca9555@20 {
++		compatible = "nxp,pca9555";
++		gpio-controller;
++		#gpio-cells = <2>;
++		reg = <0x20>;
++	};
++
++	eeprom@54 {
++		compatible = "atmel,24c08";
++		reg = <0x54>;
++		pagesize = <16>;
++	};
++};
++
++&i2c3 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c3>;
++	status = "disabled";
++};
++
++&i2c4 {
++       clock-frequency = <400000>;
++       pinctrl-names = "default";
++       pinctrl-0 = <&pinctrl_i2c4>;
++       status = "okay";
++};
++
++&pcie0 {
++	reset-gpio = <&pca9555 0 GPIO_ACTIVE_LOW>;
++	ext_osc = <1>;
++	status = "okay";
++};
++
++&usdhc2 {
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
++	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio2 20 GPIO_ACTIVE_HIGH>;
++	no-1-8-v;
++	bus-width = <4>;
++	vmmc-supply = <&reg_usdhc2_vmmc>;
++	status = "okay";
++};
++
++&usbotg1 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usbotg2 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++&gpu {
++	status = "okay";
++};
++
++&vpu_g1 {
++	status = "okay";
++};
++
++&vpu_g2 {
++	status = "okay";
++};
++
++&vpu_h1 {
++	status = "okay";
++};
++
++
++&iomuxc {
++	sb-ucm-imx8 {
++		pinctrl_i2c1: i2c1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C1_SDA_I2C1_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_i2c3: i2c3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C3_SDA_I2C3_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_i2c4: i2c4grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL		0x400001c3
++				MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA		0x400001c3
++			>;
++		};
++
++		pinctrl_usdhc2: usdhc2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc2_gpio: usdhc2grpgpio {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
++				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x41
++				MX8MM_IOMUXC_SD2_WP_GPIO2_IO20		0x00
++			>;
++		};
++
++		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
++				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
++				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
++				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
++				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
++				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
++				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++			>;
++		};
++
++		/*
++		Copy & Paste from an MXP evk
++		As of now an external OSC1 25MHz is in use
++		Left as an example for the next revision
++		*/
++		pinctrl_csi1: csi1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO15_CCMSRCGPCMIX_CLKO2	0x59
++				MX8MM_IOMUXC_GPIO1_IO14_CCMSRCGPCMIX_CLKO1	0x59
++			>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini-rs485.dts b/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini-rs485.dts
+new file mode 100644
+index 0000000..660a334
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini-rs485.dts
+@@ -0,0 +1,15 @@
++/dts-v1/;
++
++#include "mcm-imx8m-mini.dts"
++#include "mcm-imx8m-mini-rs485.dtsi"
++#include "sb-mcm-imx8-rev1.dtsi"
++
++/ {
++	model = "CompuLab MCM i.MX8MM on SB-MCM8M Rev 1.0";
++	compatible = "cpl,sbc-mcm-imx8m-mini", "cpl,mcm-imx8m-mini", "fsl,imx8mm";
++};
++
++&uart4_sel {
++	/delete-property/ enable-active-low;
++	enable-active-high;
++};
+diff --git a/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini.dts b/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini.dts
+new file mode 100644
+index 0000000..d08abeb
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-mcm-imx8m-mini.dts
+@@ -0,0 +1,9 @@
++/dts-v1/;
++
++#include "mcm-imx8m-mini.dts"
++#include "sb-mcm-imx8-rev1.dtsi"
++
++/ {
++	model = "CompuLab MCM i.MX8MM on SB-MCM8M Rev 1.0";
++	compatible = "cpl,sbc-mcm-imx8m-mini", "cpl,mcm-imx8m-mini", "fsl,imx8mm";
++};
+diff --git a/arch/arm64/boot/dts/compulab/ucm-imx8m-mini.dts b/arch/arm64/boot/dts/compulab/ucm-imx8m-mini.dts
+new file mode 100644
+index 0000000..36b7044
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/ucm-imx8m-mini.dts
+@@ -0,0 +1,447 @@
++/*
++ * Copyright 2018 CompuLab
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++/dts-v1/;
++
++#include "../freescale/imx8mm-pinfunc.h"
++#include "../freescale/imx8mm.dtsi"
++
++/ {
++	model = "CompuLab UCM i.MX8MM board";
++	compatible = "cpl,ucm-imx8m-mini", "fsl,imx8mm";
++
++	chosen {
++		bootargs = "console=ttymxc2,115200 earlycon=ec_imx6q,0x30880000,115200";
++		stdout-patch = &uart3;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++		heartbeat-led {
++			label = "Heartbeat";
++			gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "heartbeat";
++		};
++	};
++	//Fake regulator provides WL_REG_ON signal for wireless interface
++	wlreg_on: wlregon-regulator {
++		compatible = "regulator-fixed";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-name = "wlreg_on";
++		gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
++		startup-delay-us = <100>;
++		enable-active-high;
++		regulator-always-on;
++		status = "okay";
++	};
++
++	regulator-usdhc3rst {
++		compatible = "regulator-fixed";
++		regulator-name = "usdhc3_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio3 16 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++
++	regulator-fec1rst {
++		compatible = "regulator-fixed";
++		regulator-name = "fec1_rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio1 10 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++		startup-delay-us = <500>;
++	};
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog_1>;
++
++	ucm-imx8m-mini {
++		pinctrl_hog_1: hoggrp-1 {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x19
++				MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16	0x190
++			>;
++		};
++
++		pinctrl_fec1: fec1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_ENET_MDC_ENET1_MDC		0x3
++				MX8MM_IOMUXC_ENET_MDIO_ENET1_MDIO	0x3
++				MX8MM_IOMUXC_ENET_TD3_ENET1_RGMII_TD3	0x1f
++				MX8MM_IOMUXC_ENET_TD2_ENET1_RGMII_TD2	0x1f
++				MX8MM_IOMUXC_ENET_TD1_ENET1_RGMII_TD1	0x1f
++				MX8MM_IOMUXC_ENET_TD0_ENET1_RGMII_TD0	0x1f
++				MX8MM_IOMUXC_ENET_RD3_ENET1_RGMII_RD3	0x91
++				MX8MM_IOMUXC_ENET_RD2_ENET1_RGMII_RD2	0x91
++				MX8MM_IOMUXC_ENET_RD1_ENET1_RGMII_RD1	0x91
++				MX8MM_IOMUXC_ENET_RD0_ENET1_RGMII_RD0	0x91
++				MX8MM_IOMUXC_ENET_TXC_ENET1_RGMII_TXC	0x1f
++				MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC	0x91
++				MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
++				MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
++			>;
++		};
++
++		pinctrl_i2c2: i2c2grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
++				MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
++			>;
++		};
++
++		pinctrl_pmic: pmicirq {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO03_GPIO1_IO3		0x41
++			>;
++		};
++
++		pinctrl_uart3: uart3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART3_RXD_UART3_DCE_RX	0x49
++				MX8MM_IOMUXC_UART3_TXD_UART3_DCE_TX	0x49
++			>;
++		};
++
++		pinctrl_usdhc1_gpio: usdhc1grpgpio {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_RESET_B_GPIO2_IO10	0x41
++			>;
++		};
++
++		pinctrl_usdhc1: usdhc1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x190
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d0
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d0
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d0
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d0
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d0
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc1_100mhz: usdhc1grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x194
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d4
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d4
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d4
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d4
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d4
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc1_200mhz: usdhc1grp200mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_SD1_CLK_USDHC1_CLK		0x196
++				MX8MM_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d6
++				MX8MM_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d6
++				MX8MM_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d6
++				MX8MM_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d6
++				MX8MM_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d6
++				MX8MM_IOMUXC_GPIO1_IO03_USDHC1_VSELECT	0x1d0
++			>;
++		};
++
++		pinctrl_usdhc3: usdhc3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000190
++				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d0
++				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d0
++				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d0
++				MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d0
++				MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d0
++				MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d0
++				MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d0
++				MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d0
++				MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d0
++				MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x190
++			>;
++		};
++
++		pinctrl_usdhc3_100mhz: usdhc3grp100mhz {
++			fsl,pins = <
++				MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000194
++				MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d4
++				MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d4
++				MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d4
++				MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d4
++				MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d4
++				MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d4
++				MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d4
++				MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d4
++				MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d4
++				MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x194
++			>;
++		};
++
++		pinctrl_wdog: wdoggrp {
++			fsl,pins = <
++				MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
++			>;
++		};
++	};
++};
++
++&i2c2 {
++	clock-frequency = <400000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c2>;
++	status = "okay";
++
++	rtc@69 {
++		compatible = "ab1805";
++		reg = <0x69>;
++		pagesize = <16>;
++		status = "okay";
++	};
++
++
++	pmic: bd71837@4b {
++		reg = <0x4b>;
++		compatible = "rohm,bd71837";
++		/* PMIC BD71837 PMIC_nINT GPIO1_IO3 */
++		pinctrl-0 = <&pinctrl_pmic>;
++		interrupts = <3 GPIO_ACTIVE_LOW>;
++		interrupt-parent = <&gpio1>;
++//		gpio_intr = <&gpio1 3 GPIO_ACTIVE_LOW>;
++
++		gpo {
++			rohm,drv = <0x0C>;	/* 0b0000_1100 all gpos with cmos output mode */
++		};
++
++		regulators {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			bd71837,pmic-buck2-uses-i2c-dvs;
++			bd71837,pmic-buck2-dvs-voltage = <1000000>, <900000>, <0>; /* VDD_ARM: Run-Idle */
++
++			buck1_reg: regulator@0 {
++				reg = <0>;
++				regulator-compatible = "buck1";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++			};
++
++			buck2_reg: regulator@1 {
++				reg = <1>;
++				regulator-compatible = "buck2";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++			};
++
++			buck3_reg: regulator@2 {
++				reg = <2>;
++				regulator-compatible = "buck3";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++			};
++
++			buck4_reg: regulator@3 {
++				reg = <3>;
++				regulator-compatible = "buck4";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++			};
++
++			buck5_reg: regulator@4 {
++				reg = <4>;
++				regulator-compatible = "buck5";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck6_reg: regulator@5 {
++				reg = <5>;
++				regulator-compatible = "buck6";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck7_reg: regulator@6 {
++				reg = <6>;
++				regulator-compatible = "buck7";
++				regulator-min-microvolt = <1605000>;
++				regulator-max-microvolt = <1995000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck8_reg: regulator@7 {
++				reg = <7>;
++				regulator-compatible = "buck8";
++				regulator-min-microvolt = <800000>;
++				regulator-max-microvolt = <1400000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo1_reg: regulator@8 {
++				reg = <8>;
++				regulator-compatible = "ldo1";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo2_reg: regulator@9 {
++				reg = <9>;
++				regulator-compatible = "ldo2";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo3_reg: regulator@10 {
++				reg = <10>;
++				regulator-compatible = "ldo3";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo4_reg: regulator@11 {
++				reg = <11>;
++				regulator-compatible = "ldo4";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo5_reg: regulator@12 {
++				reg = <12>;
++				regulator-compatible = "ldo5";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++			};
++
++			ldo6_reg: regulator@13 {
++				reg = <13>;
++				regulator-compatible = "ldo6";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo7_reg: regulator@14 {
++				reg = <14>;
++				regulator-compatible = "ldo7";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++			};
++		};
++	};
++
++	eeprom@50 {
++		compatible = "atmel,24c08";
++		reg = <0x50>;
++		pagesize = <16>;
++	};
++};
++
++&snvs {
++	status = "okay";
++};
++
++&fec1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_fec1>;
++	phy-mode = "rgmii-id";
++	phy-handle = <&ethphy0>;
++	fsl,magic-packet;
++	fsl,rgmii_rxc_dly;
++	status = "okay";
++
++	mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		ethphy0: ethernet-phy@0 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <0>;
++			at803x,led-act-blind-workaround;
++			at803x,eee-okay;
++			at803x,vddio-1p8v;
++		};
++	};
++};
++
++&uart3 { /* console */
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart3>;
++	status = "okay";
++};
++
++&usdhc1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
++	bus-width = <4>;
++	non-removable;
++	wifi-host;
++	pm-ignore-notify;
++	vmmc-supply = <&wlreg_on>;
++	status = "okay";
++	brcmf: wifi@1 {
++		compatible = "brcm,bcm4329-fmac";
++		reg = <1>;
++	};
++};
++
++&usdhc3 {
++	pinctrl-names = "default", "state_100mhz";
++	pinctrl-0 = <&pinctrl_usdhc3>;
++	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
++	bus-width = <8>;
++	non-removable;
++	status = "okay";
++};
++
++&wdog1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdog>;
++	fsl,ext-reset-output;
++	status = "okay";
++};
++
++&A53_0 {
++	arm-supply = <&buck2_reg>;
++};
+-- 
+2.25.1
+
