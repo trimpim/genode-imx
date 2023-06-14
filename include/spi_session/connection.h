@@ -30,10 +30,10 @@ struct Spi::Connection : Genode::Connection<Session>, Session_client
 
 	explicit Connection(Genode::Env& env,  size_t io_buffer_size = DEFAULT_IO_BUFFER_SIZE, const char* label = "")
 	:
-		Genode::Connection<Session>(env,
-		                            session(env.parent(),
-		                                    "ram_quota=%ld, cap_quota=%ld, label=\"%s\", io_buffer_size=%ld",
-		                                    RAM_QUOTA + io_buffer_size, Session::CAP_QUOTA, label, io_buffer_size)),
+		Genode::Connection<Session> { env,
+		                              label,
+		                              Ram_quota { RAM_QUOTA + io_buffer_size },
+		                              Args { " io_buffer_size=", io_buffer_size} },
 		Session_client(env.rm(), cap())
 	{ }
 
