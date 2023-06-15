@@ -1,0 +1,24 @@
+From 514fa9d6aaefc4e026e4402c3c22c84aa2bbecb2 Mon Sep 17 00:00:00 2001
+From: Alice Domage <alice.domage@gapfruit.com>
+Date: Thu, 15 Jun 2023 10:51:08 +0200
+Subject: [PATCH] sdhci-esdhc-imx: disbale CQE for imx8mm based soc
+
+---
+ drivers/mmc/host/sdhci-esdhc-imx.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/mmc/host/sdhci-esdhc-imx.c b/drivers/mmc/host/sdhci-esdhc-imx.c
+index 16ed19f47..f28dbfcfe 100644
+--- a/drivers/mmc/host/sdhci-esdhc-imx.c
++++ b/drivers/mmc/host/sdhci-esdhc-imx.c
+@@ -272,7 +272,6 @@ static struct esdhc_soc_data usdhc_imx8mm_data = {
+ 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
+ 			| ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200
+ 			| ESDHC_FLAG_HS400 | ESDHC_FLAG_HS400_ES
+-			| ESDHC_FLAG_CQHCI
+ 			| ESDHC_FLAG_STATE_LOST_IN_LPMODE,
+ };
+ 
+-- 
+2.30.2
+
