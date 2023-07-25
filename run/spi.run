@@ -3,22 +3,19 @@ assert_spec arm_v8a
 
 create_boot_directory
 
-import_from_depot [depot_user]/src/[base_src]
-import_from_depot [depot_user]/src/gtest
-import_from_depot [depot_user]/src/gtest_component
-import_from_depot [depot_user]/src/imx8mm_platform_drv
-import_from_depot [depot_user]/src/init
-import_from_depot [depot_user]/src/libc
-import_from_depot [depot_user]/src/stdcxx
-import_from_depot [depot_user]/src/vfs
-import_from_depot [depot_user]/src/vfs_spi
+lappend depot_archives [depot_user]/raw/imx8mm_iot_gate-devices
+lappend depot_archives [depot_user]/src/[base_src]
+lappend depot_archives [depot_user]/src/imx8mm_platform_drv
+lappend depot_archives [depot_user]/src/init
+lappend depot_archives [depot_user]/src/vfs
+lappend depot_archives [depot_user]/src/vfs_spi
 
 set build_components {
 	drivers/spi
 	test/spi_shiftregister
 }
 
-source ${genode_dir}/repos/base/run/platform_drv.inc
+import_from_depot $depot_archives
 
 build $build_components
 
@@ -35,14 +32,14 @@ set config  {
 	</parent-provides>
 
 	<default-route>
-		<any-service> <parent/> <any-child/> </any-service>
+		<any-service> <parent/> </any-service>
 	</default-route>
 
 	<default caps="100"/>
 
 	<start name="timer">
 		<resource name="RAM" quantum="1M"/>
-		<provides><service name="Timer"/></provides>
+		<provides> <service name="Timer"/> </provides>
 	</start>
 
 	<start name="platform_drv" caps="800" managing_system="yes">
@@ -52,17 +49,7 @@ set config  {
 			<service name="Platform"/>
 			<service name="Regulator"/>
 		</provides>
-
-		<config devices_rom="config">
-			<device name="ecspi1">
-				<!-- ecspi1 ctl register -->
-				<io_mem address="0x30820000" size="0x1000"/>
-				<irq number="63"/>
-				<clock  name="ecspi1_clk_root"
-				        driver_name="ecspi1_root_clk" parent="system_pll3_clk"/>
-				<clock  name="ecspi1_gate"/>
-			</device>
-
+		<config>
 			<policy label_prefix="imx8q_spi_drv"> <device name="ecspi1"/> </policy>
 		</config>
 	</start>
@@ -70,7 +57,6 @@ set config  {
 	<start name="imx8q_spi_drv">
 		<resource name="RAM" quantum="1M"/>
 		<provides> <service name="Spi"/> </provides>
-
 		<config loopback="yes" verbose="no">
 			<policy label_prefix="Loopback"
 			        slave_select="0x0"
@@ -80,21 +66,19 @@ set config  {
 			        ss_line_active_state="1"/>
 		</config>
 		<route>
-			<any-service> <parent/> <any-child/> </any-service>
+			<service name="Platform"> <child name="platform_drv"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
 		</route>
 	</start>
 
 	<start name="spi_shiftregister">
 		<resource name="RAM" quantum="1M"/>
 		<config>
-			<arg value="test-trust_anchor"/>
-			<env key="TERM" value="screen"/>
-			<libc stdout="/dev/log" stderr="/dev/log" rtc="/dev/rtc"/>
 			<vfs>
 				<dir name="dev">
 					<log/>
-					<inline name="rtc">2022-01-01 00:01</inline>
-					<spi-imx8 name="shiftregister" verbose="yes"/>
+					<spi-imx8 name="shiftregister"/>
 				</dir>
 			</vfs>
 		</config>
@@ -109,11 +93,6 @@ set config  {
 
 install_config $config
 
-set boot_modules {
-	imx8q_spi_drv
-	spi_shiftregister
-}
-
-build_boot_image $boot_modules
+build_boot_image [build_artifacts]
 
 run_genode_until "Shift register test succeed!" 30

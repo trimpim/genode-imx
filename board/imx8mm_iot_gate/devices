@@ -139,5 +139,13 @@
 		<clock  name="ocotp_gate"/>
 	</device>
 
+	<device name="ecspi1">
+		<io_mem address="0x30820000" size="0x1000"/>
+		<irq number="63"/>
+		<clock  name="ecspi1_clk_root"
+		        driver_name="ecspi1_root_clk" parent="system_pll3_clk"/>
+		<clock  name="ecspi1_gate"/>
+	</device>
+
 </devices>
 
