@@ -30,13 +30,24 @@
 		<clock name="i2c2_gate"/>
 	</device>
 
+	<device name="usbphynop1" type="usb-nop-xceiv">
+		<clock        name="usb_phy_ref_clk_root"
+		              parent="system_pll1_div8"
+		              driver_name="main_clk"
+		              rate="100000000"/>
+	</device>
+
+	<device name="usbphynop2" type="usb-nop-xceiv">
+		<clock        name="usb_phy_ref_clk_root"
+		              parent="system_pll1_div8"
+		              driver_name="main_clk"
+		              rate="100000000"/>
+	</device>
+
 	<device name="usb_host1" type="fsl,imx7d-usb">
 		<io_mem       address="0x32E40000" size="0x10000"/>
 		<irq          number="72"/>
 		<power-domain name="usb_otg_1"/>
-		<clock        name="usb_phy_ref_clk_root"
-		              parent="system_pll1"
-		              rate="100000000"/>
 		<clock        name="usb_core_ref_clk_root"
 		              parent="system_pll1_div8"
 		              rate="100000000"
@@ -56,9 +67,6 @@
 		<io_mem       address="0x32E50000" size="0x10000"/>
 		<irq          number="73"/>
 		<power-domain name="usb_otg_2"/>
-		<clock        name="usb_phy_ref_clk_root"
-		              parent="system_pll1"
-		              rate="100000000"/>
 		<clock        name="usb_core_ref_clk_root"
 		              parent="system_pll1_div8"
 		              rate="100000000"

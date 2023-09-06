@@ -46,6 +46,8 @@ set config {
 			<report devices="yes" config="no"/>
 
 			<policy label="usb_host_drv -> " info="yes">
+				<device name="usbphynop1"/>
+				<device name="usbphynop2"/>
 				<device name="usb_host1"/>
 				<device name="usb_host2"/>
 				<device name="usb_phy"/>
