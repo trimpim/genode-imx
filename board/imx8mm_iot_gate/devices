@@ -155,5 +155,14 @@
 		<clock  name="ecspi1_gate"/>
 	</device>
 
+	<device name="ecspi3">
+		<io_mem address="0x30840000" size="0x10000"/>
+		<irq number="65"/>
+		<clock  name="ecspi3_clk_root"
+		        driver_name="ecspi3_clk_root"
+		        parent="system_pll2_div5"/>
+		<clock  name="ecspi3_gate"/>
+	</device>
+
 </devices>
 
