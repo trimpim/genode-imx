@@ -141,11 +141,23 @@ Bootstrap::Platform::Board::Board()
 		{ 0x303303BC, 0x140 },  /* SAI5_RXD3_GPIO3_IO24 enable pull up resistor */
 		{ 0x30330434, 0x140 },  /* SAI5_RXD3_GPIO3_IO24 enable pull up resistor */
 
-		/* I2c2 pin/pad control for RTC AM1805 */
-		{ 0x3033021C, 0x10  }, /* Enable SION I2c2_scl */
-		{ 0x30330220, 0x10  }, /* Enable SION I2c2_sda */
-		{ 0x30330484, 0x1C3 }, /* I2c2_scl pullup resistor */
-		{ 0x30330488, 0x1C3 }, /* I2c2_sda pullup resistor */
+		/* i2c1 pin/pad control */
+		{ 0x30330214, 0x10  }, /* Enable SION i2c2_scl */
+		{ 0x30330218, 0x10  }, /* Enable SION i2c2_sda */
+		{ 0x3033047C, 0x1C3 }, /* i2c2_scl pullup resistor */
+		{ 0x30330480, 0x1C3 }, /* i2c2_sda pullup resistor */
+
+		/* i2c2 pin/pad control for RTC AM1805 */
+		{ 0x3033021C, 0x10  }, /* Enable SION i2c2_scl */
+		{ 0x30330220, 0x10  }, /* Enable SION i2c2_sda */
+		{ 0x30330484, 0x1C3 }, /* i2c2_scl pullup resistor */
+		{ 0x30330488, 0x1C3 }, /* i2c2_sda pullup resistor */
+
+		/* i2c4 pin/pad control */
+		{ 0x3033022C, 0x10  }, /* Enable SION i2c2_scl */
+		{ 0x30330230, 0x10  }, /* Enable SION i2c2_sda */
+		{ 0x30330494, 0x1C3 }, /* i2c2_scl pullup resistor */
+		{ 0x30330498, 0x1C3 }, /* i2c2_sda pullup resistor */
 	};
 
 	unsigned num_values = sizeof(iomux_values) / (2*sizeof(unsigned long));
