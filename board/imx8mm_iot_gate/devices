@@ -22,14 +22,6 @@
 		<clock name="enet1_gate" driver_name="ahb"/>
 	</device>
 
-	<device name="i2c2">
-		<io_mem address="0x30A30000" size="0x10000"/>
-		<irq number="68"/>
-		<clock name="i2c2_clk_root"
-		       driver_name="i2c2_root_clk" parent="system_pll3_clk"/>
-		<clock name="i2c2_gate"/>
-	</device>
-
 	<device name="usbphynop1" type="usb-nop-xceiv">
 		<clock        name="usb_phy_ref_clk_root"
 		              parent="system_pll1_div8"
@@ -162,6 +154,22 @@
 		        driver_name="ecspi3_clk_root"
 		        parent="system_pll2_div5"/>
 		<clock  name="ecspi3_gate"/>
+	</device>
+
+	<device name="i2c1">
+		<io_mem address="0x30A20000" size="0x10000"/>
+		<irq number="67"/>
+		<clock  name="i2c1_clk_root"
+		        driver_name="i2c1_root_clk" parent="system_pll3_clk"/>
+		<clock  name="i2c1_gate"/>
+	</device>
+
+	<device name="i2c2">
+		<io_mem address="0x30A30000" size="0x10000"/>
+		<irq number="68"/>
+		<clock  name="i2c2_clk_root"
+		        driver_name="i2c2_root_clk" parent="system_pll3_clk"/>
+		<clock  name="i2c2_gate"/>
 	</device>
 
 </devices>
