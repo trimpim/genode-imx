@@ -1,0 +1,25 @@
+From fb8bdaec207b3396d599e96329d18e57b5ae9489 Mon Sep 17 00:00:00 2001
+From: Sid Hussmann <sid.hussmann@gapfruit.com>
+Date: Wed, 21 Sep 2022 15:43:38 +0200
+Subject: [PATCH] iot_gateway: increase BOOTM size to 64M
+
+---
+ include/configs/iot-gate-imx8.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/iot-gate-imx8.h b/include/configs/iot-gate-imx8.h
+index b3d6082a66..d687d1eb1b 100644
+--- a/include/configs/iot-gate-imx8.h
++++ b/include/configs/iot-gate-imx8.h
+@@ -9,6 +9,8 @@
+ 
+ #include "cpl-imx8m-mini.h"
+ 
++#define CONFIG_SYS_BOOTM_LEN		SZ_64M /* Increase max gunzip size */
++
+ #if defined(CONFIG_ANDROID_SUPPORT)
+ #include "ucm-imx8m-mini_android.h"
+ #endif
+-- 
+2.30.2
+

@@ -1,0 +1,72 @@
+LICENSE       := GPLv2
+VERSION       := 2
+DOWNLOADS     := compulab_bsp.git uboot.git atf.git op_tee.git firmware.file
+
+MACHINE       := iot-gate-imx8
+RELEASE       := r3.2.1
+CPL_BRANCH    := lf-5.15.32-2.0.0_${MACHINE}
+NXP_FIRMWARE  := firmware-imx-8.16.bin
+REV_ATF       := cb51a0faa4b6672007f30abaa5736ccf5e4510a1
+REV_OPTEE     := 984996422c25c99ebfc5194c1bb393028605bb0c
+REV_UBOOT     := 263b27e076a0f6e5dcc80227a235f0af73718342
+LAYER_DIR     := meta-bsp-imx8mm
+
+# prepare the sources to build U-BOOT for the Compulab imx8mm IoT gateway
+#
+# Detailed description:
+#   https://github.com/compulab-yokneam/meta-bsp-imx8mm/blob/iot-gate-imx8-r3.2.1/Documentation/imx_boot_image_build.md
+#
+
+URL(compulab_bsp) := https://github.com/compulab-yokneam/meta-bsp-imx8mm.git
+REV(compulab_bsp) := $(MACHINE)-$(RELEASE)
+DIR(compulab_bsp) := $(LAYER_DIR)
+
+URL(atf)          := https://github.com/nxp-imx/imx-atf.git
+REV(atf)          := $(REV_ATF)
+DIR(atf)          := imx-atf
+
+URL(op_tee)       := https://github.com/nxp-imx/imx-optee-os
+REV(op_tee)       := $(REV_OPTEE)
+DIR(op_tee)       := imx-optee-os
+
+URL(uboot)        := https://github.com/nxp-imx/uboot-imx.git
+REV(uboot)        := $(REV_UBOOT)
+DIR(uboot)        := uboot-imx
+
+URL(firmware)     := http://www.freescale.com/lgfiles/NMG/MAD/YOCTO/${NXP_FIRMWARE}
+SHA(firmware)     := 65f829a9e2597bffc58a680aaefa638122144a083633d1ae09b3aec1d9f8ab84
+
+BSP_LAYER   = $(realpath $(LAYER_DIR))
+PATCH_DIR  := $(REP_DIR)/patches/
+
+HASH_INPUT += $(PATCH_DIR)/uboot-imx8mm_iot_gate-BOOTM_size_64M.patch
+HASH_INPUT += $(PATCH_DIR)/uboot-imx8mm_iot_gate-enable_spi_and_tpm.patch
+#HASH_INPUT += $(PATCH_DIR)/uboot-imx8mm_iot_gate-tpm_setup_platform_hierarchy.patch
+
+default: firmware.file
+
+	# unpack the firmware
+	$(VERBOSE)rm -rf firmware ; mkdir -p firmware ; cd firmware ; sh ../${NXP_FIRMWARE} --auto-accept
+
+	# patch ATF sources
+	$(VERBOSE)git -C imx-atf checkout -b $(CPL_BRANCH)
+	$(VERBOSE)echo "[commit]"            >> imx-atf/.git/config
+	$(VERBOSE)echo "    gpgsign = false" >> imx-atf/.git/config
+	$(VERBOSE)git -C imx-atf am $(BSP_LAYER)/recipes-bsp/imx-atf/compulab/imx8mm/*.patch
+
+	# patch op_tee sources
+	$(VERBOSE)git -C imx-optee-os checkout -b $(CPL_BRANCH)
+	$(VERBOSE)echo "[commit]"            >> imx-optee-os/.git/config
+	$(VERBOSE)echo "    gpgsign = false" >> imx-optee-os/.git/config
+	$(VERBOSE)git -C imx-optee-os am $(BSP_LAYER)/recipes-security/optee-imx/compulab/imx8mm/*.patch
+
+	# patch u-boot sources
+	$(VERBOSE)git -C uboot-imx checkout -b $(CPL_BRANCH)
+	$(VERBOSE)echo "[commit]"            >> uboot-imx/.git/config
+	$(VERBOSE)echo "    gpgsign = false" >> uboot-imx/.git/config
+	$(VERBOSE)git -C uboot-imx am $(BSP_LAYER)/recipes-bsp/u-boot/compulab/imx8mm/*.patch
+	$(VERBOSE)git -C uboot-imx am $(PATCH_DIR)/uboot-imx8mm_iot_gate-BOOTM_size_64M.patch
+	$(VERBOSE)git -C uboot-imx am $(PATCH_DIR)/uboot-imx8mm_iot_gate-enable_spi_and_tpm.patch
+	@#$(VERBOSE)git -C uboot-imx am $(PATCH_DIR)/uboot-imx8mm_iot_gate-tpm_setup_platform_hierarchy.patch
+
+# vim: ft=make :

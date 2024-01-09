@@ -1,0 +1,180 @@
+From ea1d33d67d106e19e8ce2e95171abd1b892353da Mon Sep 17 00:00:00 2001
+From: Pirmin Duss <pirmin.duss@gapfruit.com>
+Date: Wed, 22 Nov 2023 12:57:52 +0100
+Subject: [PATCH 1/2] Enable SPI and TPM
+
+---
+ arch/arm/dts/cpl-imx8m-mini.dtsi | 106 +++++++++++++++++++++++++++++++
+ drivers/clk/imx/clk-imx8mm.c     |  27 ++++++++
+ 2 files changed, 133 insertions(+)
+
+diff --git a/arch/arm/dts/cpl-imx8m-mini.dtsi b/arch/arm/dts/cpl-imx8m-mini.dtsi
+index 3cd4bfab6f..da1b930829 100644
+--- a/arch/arm/dts/cpl-imx8m-mini.dtsi
++++ b/arch/arm/dts/cpl-imx8m-mini.dtsi
+@@ -45,11 +45,117 @@
+ 	};
+ };
+ 
++/*
++ * Enable access to the TPM.
++ *
++ * Depending on the slot the TPM is connected to you need to
++ * enable either:
++ *   - for TPM on slot FA:
++ *      - regulator-tpm0-rst
++ *      - &ecspi2
++ *      - pinctrl_tpm0
++ *      - pinctrl_ecspi2
++ *   - for TPM on slot FB:
++ *      - regulator-tpm1-rst
++ *      - &ecspi3
++ *      - pinctrl_tpm1
++ *      - pinctrl_ecspi3
++ * If you connect the module to slot FA, then it will also work when the
++ * function blocks for the slot FB are enabled. but not the other way around.
++ */
++
++//&{/} {
++//	regulator-tpm0-rst {
++//		compatible = "regulator-fixed";
++//		regulator-name = "tpm0-rst";
++//		regulator-min-microvolt = <3300000>;
++//		regulator-max-microvolt = <3300000>;
++//		gpio = <&gpio4 31 GPIO_ACTIVE_HIGH>;
++//		regulator-always-on;
++//		enable-active-high;
++//	};
++//};
++
++&{/} {
++	regulator-tpm1-rst {
++		compatible = "regulator-fixed";
++		regulator-name = "tpm1-rst";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio5 28 GPIO_ACTIVE_HIGH>;
++		regulator-always-on;
++		enable-active-high;
++	};
++};
++
++//&ecspi2 {
++//	#address-cells = <1>;
++//	#size-cells = <0>;
++//	pinctrl-names = "default";
++//	pinctrl-0 = <&pinctrl_ecspi2>;
++//	status = "okay";
++//	tpm0: tpm@0 {
++//		compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++//		reg = <0>;
++//		pinctrl-names = "default";
++//		pinctrl-0 = <&pinctrl_tpm0>;
++//		spi-max-frequency = <5000000>;
++//		status = "okay";
++//	};
++//};
++
++&ecspi3 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi3>;
++	status = "okay";
++	tpm1: tpm@1 {
++		compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_tpm1>;
++		spi-max-frequency = <5000000>;
++		status = "okay";
++	};
++};
++
+ &iomuxc {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_hog_1>;
+ 
+ 	cpl-imx8m-mini {
++
++//		pinctrl_tpm0: tpm0grp {
++//			fsl,pins = <
++//				MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31  0x05
++//			>;
++//		};
++
++		pinctrl_tpm1: tpm1grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART4_RXD_GPIO5_IO28  0x05
++			>;
++		};
++
++//		pinctrl_ecspi2: escpi2grp {
++//			fsl,pins = <
++//				MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK  0x01
++//				MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI  0x01
++//				MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO  0x01
++//				MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13    0x05  // chip select
++//			>;
++//		};
++
++		pinctrl_ecspi3: escpi3grp {
++			fsl,pins = <
++				MX8MM_IOMUXC_UART1_RXD_ECSPI3_SCLK  0x01
++				MX8MM_IOMUXC_UART1_TXD_ECSPI3_MOSI  0x01
++				MX8MM_IOMUXC_UART2_RXD_ECSPI3_MISO  0x01
++				MX8MM_IOMUXC_UART2_TXD_GPIO5_IO25   0x05  // chip select
++			>;
++		};
++
+ 		pinctrl_hog_1: hoggrp-1 {
+ 			fsl,pins = <
+ 				MX8MM_IOMUXC_GPIO1_IO00_GPIO1_IO0       0x140
+diff --git a/drivers/clk/imx/clk-imx8mm.c b/drivers/clk/imx/clk-imx8mm.c
+index d32ff8409a..560501a6d3 100644
+--- a/drivers/clk/imx/clk-imx8mm.c
++++ b/drivers/clk/imx/clk-imx8mm.c
+@@ -131,6 +131,17 @@ static const char *imx8mm_usb_core_sels[] = {"clock-osc-24m", "sys_pll1_100m", "
+ static const char *imx8mm_usb_phy_sels[] = {"clock-osc-24m", "sys_pll1_100m", "sys_pll1_40m", "sys_pll2_100m",
+ 					     "sys_pll2_200m", "clk_ext2", "clk_ext3", "audio_pll2_out", };
+ 
++#if CONFIG_IS_ENABLED(DM_SPI)
++static const char *imx8mm_ecspi1_sels[] = {"clock-osc-24m", "sys_pll2_200m", "sys_pll1_40m", "sys_pll1_160m",
++                                           "sys_pll1_800m", "sys_pll3_out", "sys_pll2_250m", "audio_pll2_out", };
++
++static const char *imx8mm_ecspi2_sels[] = {"clock-osc-24m", "sys_pll2_200m", "sys_pll1_40m", "sys_pll1_160m",
++                                           "sys_pll1_800m", "sys_pll3_out", "sys_pll2_250m", "audio_pll2_out", };
++
++static const char *imx8mm_ecspi3_sels[] = {"clock-osc-24m", "sys_pll2_200m", "sys_pll1_40m", "sys_pll1_160m",
++                                           "sys_pll1_800m", "sys_pll3_out", "sys_pll2_250m", "audio_pll2_out", };
++#endif
++
+ static ulong imx8mm_clk_get_rate(struct clk *clk)
+ {
+ 	struct clk *c;
+@@ -437,6 +448,22 @@ static int imx8mm_clk_probe(struct udevice *dev)
+ 	       base + 0x40a0, 0));
+ #endif
+ 
++#if CONFIG_IS_ENABLED(DM_SPI)
++	clk_dm(IMX8MM_CLK_ECSPI1,
++	       imx8m_clk_composite("ecspi1", imx8mm_ecspi1_sels, base + 0xb280));
++	clk_dm(IMX8MM_CLK_ECSPI2,
++	       imx8m_clk_composite("ecspi2", imx8mm_ecspi2_sels, base + 0xb300));
++	clk_dm(IMX8MM_CLK_ECSPI3,
++	       imx8m_clk_composite("ecspi3", imx8mm_ecspi3_sels, base + 0xc180));
++
++	clk_dm(IMX8MM_CLK_ECSPI1_ROOT,
++	       imx_clk_gate4("ecspi1_root_clk", "ecspi1", base + 0x4070, 0));
++	clk_dm(IMX8MM_CLK_ECSPI2_ROOT,
++	       imx_clk_gate4("ecspi2_root_clk", "ecspi2", base + 0x4080, 0));
++	clk_dm(IMX8MM_CLK_ECSPI3_ROOT,
++	       imx_clk_gate4("ecspi3_root_clk", "ecspi3", base + 0x4090, 0));
++#endif
++
+ 	return 0;
+ }
+ 
+-- 
+2.43.0
+
