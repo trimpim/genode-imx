@@ -15,14 +15,6 @@ int ___ratelimit(struct ratelimit_state * rs,const char * func)
 }
 
 
-#include <linux/clk-provider.h>
-
-const char * __clk_get_name(const struct clk * clk)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
 #include <linux/kexec.h>
 
 void __noclone __crash_kexec(struct pt_regs * regs)
@@ -639,14 +631,6 @@ struct kobject *kernel_kobj;
 #include <linux/kgdb.h>
 
 void kgdb_panic(const char * msg)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/slab.h>
-
-void kmem_cache_destroy(struct kmem_cache * s)
 {
 	lx_emul_trace_and_stop(__func__);
 }
