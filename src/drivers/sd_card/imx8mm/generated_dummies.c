@@ -23,14 +23,6 @@ void __check_object_size(const void * ptr,unsigned long n,bool to_user)
 }
 
 
-#include <linux/clk-provider.h>
-
-const char * __clk_get_name(const struct clk * clk)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
 #include <linux/kexec.h>
 
 void __noclone __crash_kexec(struct pt_regs * regs)
@@ -821,14 +813,6 @@ void kgdb_panic(const char * msg)
 #include <linux/sched.h>
 
 void kick_process(struct task_struct * p)
-{
-	lx_emul_trace_and_stop(__func__);
-}
-
-
-#include <linux/slab.h>
-
-void kmem_cache_destroy(struct kmem_cache * s)
 {
 	lx_emul_trace_and_stop(__func__);
 }
