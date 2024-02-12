@@ -1,0 +1,40 @@
+LICENSE   := GPLv2
+VERSION   := 1
+
+DOWNLOADS := uboot.git meta-bsp-imx8mp.git mkimage.git atf.git firmware.file
+
+UBOOT_BRANCH := lf_v2021.04
+UBOOT_TAG := lf-5.10.35-2.0.0
+URL(uboot) := https://github.com/nxp-imx/uboot-imx.git
+DIR(uboot) := uboot
+REV(uboot) := $(UBOOT_TAG)
+
+META_BSP_IMX8MP_BRANCH := iot-gate-imx8plus_r2.0
+URL(meta-bsp-imx8mp) := https://github.com/compulab-yokneam/meta-bsp-imx8mp.git
+DIR(meta-bsp-imx8mp) := meta_bsp_imx8mp
+REV(meta-bsp-imx8mp) := $(META_BSP_IMX8MP_BRANCH)
+
+ATF_BRANCH = lf_v2.6
+ATF_TAG = lf-5.15.32-2.0.0
+URL(atf) := https://github.com/nxp-imx/imx-atf.git
+DIR(atf) := atf
+REV(atf) := $(ATF_TAG)
+
+MKIMAGE_BRANCH = lf-5.15.32_2.0.0
+URL(mkimage) := https://github.com/nxp-imx/imx-mkimage.git
+DIR(mkimage) := mkimage
+REV(mkimage) := $(MKIMAGE_BRANCH)
+
+VERSION = 8.16
+URL(firmware) := https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-$(VERSION).bin
+SHA(firmware) := 65f829a9e2597bffc58a680aaefa638122144a083633d1ae09b3aec1d9f8ab84
+DIR(firmware) := firmware
+
+PATCHES := patches/mkimage-imx8mp_iot_gate-mak-use-native-mkimage-from-sysroot.patch
+
+PATCH_OPT(patches/mkimage-imx8mp_iot_gate-mak-use-native-mkimage-from-sysroot.patch) := -p1 -d mkimage
+
+default: firmware.file uboot.git meta-bsp-imx8mp.git
+	$(VERBOSE)rm -rf firmware; mkdir -p firmware; cd firmware; sh ../firmware-imx-$(VERSION).bin --auto-accept; cd ..
+	cd uboot; for p in ../meta_bsp_imx8mp/recipes-bsp/u-boot/compulab/2021.04/imx8mp/*.patch; do patch -p1 < $$p; done; cd ..
+	cd uboot; patch -p1 < $(REP_DIR)/patches/uboot-imx8mp_iot_gate-fix-top-ram-alignement-when-optee-is-absent.patch; cd ..

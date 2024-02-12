@@ -1,0 +1,25 @@
+From b62cb09e532755d11f358dffce63a647eadfe1ee Mon Sep 17 00:00:00 2001
+From: Alice Domage <alice.domage@gapfruit.com>
+Date: Thu, 22 Feb 2024 11:20:58 +0100
+Subject: [PATCH] fix top ram alignement when optee is absent
+
+---
+ board/compulab/plat/imx8mp/board/board.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/board/compulab/plat/imx8mp/board/board.c b/board/compulab/plat/imx8mp/board/board.c
+index 16b502ad6f..5102b27ea2 100644
+--- a/board/compulab/plat/imx8mp/board/board.c
++++ b/board/compulab/plat/imx8mp/board/board.c
+@@ -533,6 +533,8 @@ int board_late_init(void)
+ ulong board_get_usable_ram_top(ulong total_size)
+ {
+ 	/* Reserve 16M memory used by M core vring/buffer, which begins at 16MB before optee */
++	if(gd->ram_top > 0x100000000)
++		gd->ram_top = 0x100000000;
+ 	if (rom_pointer[1])
+ 		return gd->ram_top - SZ_16M;
+ 
+-- 
+2.43.0
+
