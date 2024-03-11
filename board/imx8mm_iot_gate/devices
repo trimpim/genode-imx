@@ -172,5 +172,14 @@
 		<clock  name="i2c2_gate"/>
 	</device>
 
+	<!-- TODO: check this block -->
+	<device name="uart4">
+		<io_mem address="0x30A60000" size="0x10000"/>
+		<irq number="61"/>
+		<clock  name="uart4_clk_root"
+		        driver_name="uart4_root_clk" parent="system_pll3_clk"/>
+		<clock  name="uart4_gate"/>
+	</device>
+
 </devices>
 
