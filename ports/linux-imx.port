@@ -13,10 +13,12 @@ DIR(reform-debian-packages) := reform
 PATCHES := patches/linux-compulab-imx8m-plus-add-DTS-Makefile-rule.patch
 PATCHES += patches/linux-compulab-imx8m-plus-add-build-configs.patch
 PATCHES += patches/linux-compulab-imx8m-plus-fix-dtb-build-errors.patch
+PATCHES += patches/linux-compulab-imx8m-plus-adapt-fec-dts.patch
 
 PATCH_OPT(patches/linux-compulab-imx8m-plus-add-DTS-Makefile-rule.patch) := -p1 -d linux-imx
 PATCH_OPT(patches/linux-compulab-imx8m-plus-add-build-configs.patch)     := -p1 -d linux-imx
 PATCH_OPT(patches/linux-compulab-imx8m-plus-fix-dtb-build-errors.patch)  := -p1 -d linux-imx
+PATCH_OPT(patches/linux-compulab-imx8m-plus-adapt-fec-dts.patch)         := -p1 -d linux-imx
 
 default: reform-debian-packages.git linux-imx.archive
 	cd linux-imx; for p in ../reform/linux/patches/*.patch; do patch -p1 < $$p; done; cd ..

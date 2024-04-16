@@ -1,0 +1,25 @@
+From 0f50771f93c345c8ff10704fec8b42d7e620a374 Mon Sep 17 00:00:00 2001
+From: Alice Domage <alice.domage@gapfruit.com>
+Date: Mon, 15 Apr 2024 17:57:19 +0200
+Subject: [PATCH] imx8mp_iot_gate: remove reset gpio dependency to &fec dts
+ node
+
+---
+ arch/arm64/boot/dts/compulab/sb-iotgimx8plus.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/compulab/sb-iotgimx8plus.dtsi b/arch/arm64/boot/dts/compulab/sb-iotgimx8plus.dtsi
+index 8677142..d07444a 100644
+--- a/arch/arm64/boot/dts/compulab/sb-iotgimx8plus.dtsi
++++ b/arch/arm64/boot/dts/compulab/sb-iotgimx8plus.dtsi
+@@ -108,7 +108,6 @@ mdio {
+ 		fecphy: fec-phy@0 {
+ 			compatible = "ethernet-phy-ieee802.3-c22";
+ 			reg = <0>;
+-			reset-gpios = <&gpio4 24 GPIO_ACTIVE_LOW>;
+ 			reset-assert-us = <10000>;
+ 			reset-deassert-us = <80000>;
+ 			eee-broken-1000t;
+-- 
+2.44.0
+
