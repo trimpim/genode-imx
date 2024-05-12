@@ -1,0 +1,182 @@
+
+create_boot_directory
+
+
+proc platform_drv_name { } {
+
+	if {[have_board imx8mm_iot_gate]} {
+		return imx8mm_platform_drv
+	} elseif {[have_board imx8mp_iot_gate]} {
+		return imx8mp_platform_drv
+	} elseif {[have_board imx8q_evk]} {
+		return imx8mq_platform_drv
+	} elseif {[have_board mnt_reform2]} {
+		return imx8mq_platform_drv
+	}
+
+	puts "your board isn't yet supported"
+	exit 0
+}
+
+
+proc i2c_device_config { } {
+	if {[have_board imx8mm_iot_gate]} {
+		return {
+			<device name="i2c1">
+				<io_mem address="0x30A20000" size="0x10000"/>
+				<irq number="67"/>
+				<clock  name="i2c1_clk_root"
+				        driver_name="i2c1_root_clk" parent="system_pll3_clk"/>
+				<clock  name="i2c1_gate"/>
+			</device>
+
+			<device name="i2c2">
+				<io_mem address="0x30A30000" size="0x10000"/>
+				<irq number="68"/>
+				<clock  name="i2c2_clk_root"
+				        driver_name="i2c2_root_clk" parent="system_pll3_clk"/>
+				<clock  name="i2c2_gate"/>
+			</device>
+		}
+	} elseif {[have_board imx8mp_iot_gate]} {
+		return { }
+	} elseif {[have_board imx8q_evk]} {
+		return { }
+	} elseif {[have_board mnt_reform2]} {
+		return { }
+	}
+}
+
+
+proc i2c_device_policy { } {
+	if {[have_board imx8mm_iot_gate]} {
+		return {
+			<policy label_prefix="test-vfs_i2c"> <device name="i2c1"/> </policy>
+			<!--
+			<policy label_prefix="vfs_i2c-imx-1"> <device name="i2c1"/> </policy>
+			<policy label_prefix="vfs_i2c-imx-2"> <device name="i2c2"/> </policy>
+			-->
+		}
+	} elseif {[have_board imx8mp_iot_gate]} {
+		return {
+		}
+	} elseif {[have_board imx8q_evk]} {
+		return {
+		}
+	} elseif {[have_board mnt_reform2]} {
+		return {
+		}
+	}
+}
+
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/[platform_drv_name] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/gtest \
+                  [depot_user]/src/gtest_component \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/report_rom \
+                  [depot_user]/src/rtc_drv \
+                  [depot_user]/src/stdcxx \
+                  [depot_user]/src/vfs \
+
+append config {
+<config>
+	<parent-provides>
+		<service name="CPU"/>
+		<service name="IO_MEM"/>
+		<service name="IO_PORT"/>
+		<service name="IRQ"/>
+		<service name="LOG"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="ROM"/>
+	</parent-provides>
+
+	<default-route>
+		<any-service> <parent/> </any-service>
+	</default-route>
+
+	<start name="timer" caps="100">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+
+	<start name="report_rom" caps="800" managing_system="yes">
+		<resource name="RAM" quantum="4M"/>
+		<provides>
+			<service name="Report"/>
+			<service name="ROM"/>
+		</provides>
+		<config>
+			<policy label="null" report="platform_inventory -> "/>
+		</config>
+	</start>
+
+	<start name="platform_drv" caps="800" managing_system="yes">
+		<binary name="} [platform_drv_name] {"/>
+		<resource name="RAM" quantum="4M"/>
+		<provides>
+			<service name="Platform"/>
+			<service name="Regulator"/>
+		</provides>
+		<config devices_rom="config">
+
+			} [i2c_device_config] {
+
+			} [i2c_device_policy] {
+		</config>
+	</start>
+<!--
+	<start name="vfs_i2c1" caps="200">
+		<binary name="vfs"/>
+		<resource name="RAM" quantum="4M"/>
+		<provides> <service name="File_system"/> </provides>
+		<config ld_verbose="yes">
+			<vfs>
+				<i2c-imx bus_speed_khz="10" verbose="1">
+					<device bus_address="0x54" name="eeprom"/>
+					<device bus_address="0x24" name="rtc"/>
+				</i2c-imx>
+			</vfs>
+			<policy label="test-vfs_i2c -> i2c1" root="i2c/rtc"/>
+		</config>
+	</start>
+-->
+	<start name="test-vfs_i2c" caps="120">
+		<resource name="RAM" quantum="4M"/>
+		<config ld_verbose="yes">
+			<libc stdout="/dev/log" stderr="/dev/log"/>
+			<vfs>
+				<dir name="dev">
+					<log/>
+					<dir name="i2c">
+						<i2c-imx bus_speed_khz="10" verbose="1">
+							<device bus_address="0x24" name="rtc"/>
+						</i2c-imx>
+					</dir>
+				</dir>
+			</vfs>
+		</config>
+		<route>
+			<service name="Platform"> <child name="platform_drv"/> </service>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+</config>
+}
+
+install_config $config
+
+build {
+	lib/vfs_i2c-imx
+	test/vfs_i2c
+}
+
+build_boot_image [build_artifacts]
+
+run_genode_until forever
