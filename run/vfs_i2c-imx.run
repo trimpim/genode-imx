@@ -128,22 +128,7 @@ append config {
 			} [i2c_device_policy] {
 		</config>
 	</start>
-<!--
-	<start name="vfs_i2c1" caps="200">
-		<binary name="vfs"/>
-		<resource name="RAM" quantum="4M"/>
-		<provides> <service name="File_system"/> </provides>
-		<config ld_verbose="yes">
-			<vfs>
-				<i2c-imx bus_speed_khz="10" verbose="1">
-					<device bus_address="0x54" name="eeprom"/>
-					<device bus_address="0x24" name="rtc"/>
-				</i2c-imx>
-			</vfs>
-			<policy label="test-vfs_i2c -> i2c1" root="i2c/rtc"/>
-		</config>
-	</start>
--->
+
 	<start name="test-vfs_i2c" caps="120">
 		<resource name="RAM" quantum="4M"/>
 		<config ld_verbose="yes">
@@ -152,8 +137,8 @@ append config {
 				<dir name="dev">
 					<log/>
 					<dir name="i2c">
-						<i2c-imx bus_speed_khz="10" verbose="1">
-							<device bus_address="0x24" name="rtc"/>
+						<i2c-imx name="bus1" bus_speed_khz="10" verbose="yes">
+							<device bus_address="0x69" name="rtc"/>
 						</i2c-imx>
 					</dir>
 				</dir>
