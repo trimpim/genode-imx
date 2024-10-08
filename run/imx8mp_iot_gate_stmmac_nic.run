@@ -1,0 +1,428 @@
+if { ![have_board imx8mp_iot_gate] } {
+	puts "not supported board!"
+	exit 0
+}
+
+#
+# Thiselects if the test should reboot the board or only
+# restart the stmmac_nic driver.
+#
+set test_with_reboot 1
+
+
+
+# Inspired from run_genode_until, waits for a specific output `wait_for_re`
+# on a spawn ID. In contrast to run_genode_until it works also with spawning
+# pure expect scripts. Further, this method works accross reboots of the device,
+# something that run_genode_until aborts.
+#
+# /param   wait_for_re        The regex pattern to match against
+# /param   timeout_value      The timout for above pattern to appear
+# /param   running_spawn_id   The spawn id of the data stream
+proc run_spawned_until { wait_for_re timeout_value running_spawn_id } {
+	global output
+	set timeout $timeout_value
+
+	expect {
+		-i $running_spawn_id -re $wait_for_re { }
+		eof     { puts stderr "Error: Spawned process died unexpectedly"; exit -3 }
+		timeout { puts stderr "Error: Test execution timed out while waiting for \"$wait_for_re\""; exit -2 }
+	}
+	append output $expect_out(buffer)
+}
+
+
+proc transfer_data { ip_addr } {
+
+	set curl_cmd [installed_command curl]
+	set pattern  {Congrats!.*Welcome to our lwIP HTTP server!.*This is a small test page.}
+	spawn $curl_cmd $ip_addr/index.html
+	set curl_spawn_id $spawn_id
+	run_genode_until $pattern 5 $curl_spawn_id
+
+	set wget_cmd [installed_command wget]
+	spawn $wget_cmd -v -O /tmp/dl.data.test $ip_addr/data
+}
+
+
+proc get_ip_addr { } {
+	global genode_spawn_id
+	global output
+
+	run_spawned_until {\[uplink\] dhcp offer from.*\n} 25 $genode_spawn_id
+
+	# search the IP addredd of the interface
+	set match_string {([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+), offering ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+),}
+	regexp $match_string $output all ip_server ip_addr
+
+	return $ip_addr
+}
+
+
+proc reboot_test { } {
+	global genode_spawn_id
+
+	set ip_addr [get_ip_addr]
+	transfer_data $ip_addr
+
+	run_genode_until {Warning: Will reset...} 25 $genode_spawn_id
+}
+
+
+proc restart_test { } {
+	global genode_spawn_id
+
+	set ip_addr [get_ip_addr]
+	transfer_data $ip_addr
+
+	run_genode_until {Test done.} 20 $genode_spawn_id
+}
+
+
+proc system_rom_config { } {
+	global test_with_reboot
+
+	if { $test_with_reboot } {
+		return {
+				<rom name="system">
+					<inline description="poweron"> <system state=""/> </inline>
+					<sleep milliseconds="20000"/>
+					<inline description="reset"> <system state="reset"/> </inline>
+					<sleep milliseconds="4000"/>
+				</rom>
+		}
+	} else {
+		return {
+				<rom name="system">
+					<inline description="poweron"> <system state=""/> </inline>
+					<sleep milliseconds="20000000"/>
+				</rom> }
+	}
+}
+
+
+proc init_rom_config { } {
+	global test_with_reboot
+
+	set init_config_driver {
+		<config verbose="no">
+			<parent-provides>
+				<service name="CPU"/>
+				<service name="IO_MEM"/>
+				<service name="IRQ"/>
+				<service name="LOG"/>
+				<service name="PD"/>
+				<service name="Platform"/>
+				<service name="RM"/>
+				<service name="ROM"/>
+				<service name="Timer"/>
+				<service name="Uplink"/>
+			</parent-provides>
+
+			<default-route>
+				<any-service> <parent/> </any-service>
+			</default-route>
+
+			<start name="nic" caps="200">
+				<binary name="stmmac_nic"/>
+				<resource name="RAM" quantum="20M"/>
+				<route>
+					<service name="ROM" label="dtb"> <parent label="stmmac_nic-imx8mp_iot_gate.dtb"/> </service>
+					<any-service> <parent/> </any-service>
+				</route>
+			</start>
+
+		</config> }
+
+	set init_config_log {
+		<config verbose="no">
+			<parent-provides>
+				<service name="CPU"/>
+				<service name="IO_MEM"/>
+				<service name="IRQ"/>
+				<service name="LOG"/>
+				<service name="PD"/>
+				<service name="Platform"/>
+				<service name="RM"/>
+				<service name="ROM"/>
+				<service name="Timer"/>
+				<service name="Uplink"/>
+			</parent-provides>
+
+			<default-route>
+				<any-service> <parent/> </any-service>
+			</default-route>
+
+			<start name="test-log" caps="100">
+				<resource name="RAM" quantum="2M"/>
+			</start>
+
+		</config> }
+
+	if { $test_with_reboot } {
+		append dyn_cfg {
+				<rom name="init.config">
+					<inline description="start_driver">} $init_config_driver {</inline>
+					<sleep milliseconds="2000000000"/>
+				</rom> }
+		return $dyn_cfg
+	} else {
+		append dyn_cfg {
+				<rom name="init.config">
+					<inline description="start_driver">} $init_config_driver {</inline>
+					<sleep milliseconds="20000"/>
+					<inline description="start_log">} $init_config_log {</inline>
+					<sleep milliseconds="6000"/>
+				</rom> }
+		return $dyn_cfg
+	}
+}
+
+
+create_boot_directory
+
+lappend depot_archives [depot_user]/raw/imx8mp_iot_gate-devices
+lappend depot_archives [depot_user]/src/[base_src]
+lappend depot_archives [depot_user]/src/dynamic_rom
+lappend depot_archives [depot_user]/src/imx8mp_iot_gate-eeprom_reader
+lappend depot_archives [depot_user]/src/imx8mp_platform
+lappend depot_archives [depot_user]/src/imx8mq_i2c
+lappend depot_archives [depot_user]/src/imx_pin
+lappend depot_archives [depot_user]/src/init
+lappend depot_archives [depot_user]/src/libc
+lappend depot_archives [depot_user]/src/lighttpd
+lappend depot_archives [depot_user]/src/nic_router
+lappend depot_archives [depot_user]/src/openssl
+lappend depot_archives [depot_user]/src/posix
+lappend depot_archives [depot_user]/src/report_rom
+lappend depot_archives [depot_user]/src/stmmac_nic
+lappend depot_archives [depot_user]/src/test-log
+lappend depot_archives [depot_user]/src/vfs
+lappend depot_archives [depot_user]/src/vfs_lwip
+lappend depot_archives [depot_user]/src/zlib
+
+import_from_depot $depot_archives
+
+#build { test/lwip/http_srv }
+
+append config {
+<config>
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+
+	<default-route>
+		<any-service> <parent/> </any-service>
+	</default-route>
+
+	<default caps="100"/>
+
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+
+	<start name="dynamic_rom-system">
+		<binary name="dynamic_rom"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="ROM"/> </provides>
+		<config verbose="yes">
+			} [system_rom_config] {
+		</config>
+		<route>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="dynamic_rom-init">
+		<binary name="dynamic_rom"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="ROM"/> </provides>
+		<config verbose="yes">
+			} [init_rom_config] {
+		</config>
+		<route>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="platform" caps="150" managing_system="yes">
+		<binary name="imx8mp_platform"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="Platform"/> </provides>
+		<config verbose="yes">
+			<policy label="init -> nic -> " info="yes"> <device name="eqos"/> </policy>
+			<policy label="i2c -> "> <device name="i2c2"/> </policy>
+			<policy label="pin -> " info="yes"> <device name="gpio1"/> </policy>
+		</config>
+		<route>
+			<service name="ROM" label="system"> <child name="dynamic_rom-system"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="pin" caps="150">
+		<binary name="imx_pio"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides>
+			<service name="IRQ"/>
+			<service name="Pin_control"/>
+			<service name="Pin_state"/>
+		</provides>
+		<config>
+			<!-- deassert reset signal of STMMAC NICs Phy -->
+			<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
+		</config>
+		<route>
+			<service name="Platform"> <child name="platform"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="report_rom">
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="Report"/> <service name="ROM"/> </provides>
+		<config verbose="no">
+			<policy label="init -> nic -> mac" report="eeprom -> eeprom_entry_1"/>
+		</config>
+	</start>
+
+	<start name="i2c" caps="150">
+		<binary name="imx8q_evk_i2c"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="I2c"/> </provides>
+		<config verbose="yes">
+			 <policy label_prefix="eeprom" bus_address="0x50"/>
+		</config>
+		<route>
+			<service name="Platform"> <child name="platform"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="eeprom">
+		<binary name="imx8mp_iot_gate_eeprom_reader"/>
+		<resource name="RAM" quantum="10M"/>
+		<route>
+			<service name="I2c"> <child name="i2c"/> </service>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="init" caps="600">
+		<resource name="RAM" quantum="28M"/>
+		<route>
+			<service name="Platform"> <child name="platform"/> </service>
+			<service name="ROM" label="config"> <child name="dynamic_rom-init" label="init.config"/> </service>
+			<service name="ROM" label="nic -> mac"> <child name="report_rom"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<service name="Uplink"> <child name="nic_router"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="nic_router" caps="200">
+		<resource name="RAM" quantum="10M"/>
+		<provides>
+			<service name="Nic"/>
+			<service name="Uplink"/>
+		</provides>
+		<config verbose_domain_state="yes">
+
+			<domain name="uplink">
+				<nat domain="downlink" tcp-ports="16384"/>
+				<tcp-forward port="443" domain="downlink" to="10.0.3.2"/>
+				<tcp-forward port="80"  domain="downlink" to="10.0.3.2"/>
+			</domain>
+
+			<domain name="downlink" interface="10.0.3.1/24">
+				<dhcp-server ip_first="10.0.3.2" ip_last="10.0.3.2"/>
+			</domain>
+
+			<policy label_prefix="lighttpd"     domain="downlink"/>
+			<policy label_prefix="init -> nic"  domain="uplink"/>
+
+		</config>
+		<route>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="lighttpd" caps="200">
+		<resource name="RAM" quantum="1G" />
+		<config>
+			<arg value="lighttpd" />
+			<arg value="-f" />
+			<arg value="/etc/lighttpd/lighttpd.conf" />
+			<arg value="-D" />
+			<vfs>
+				<dir name="dev">
+					<log/> <null/> <zero/>
+					<inline name="rtc">2024-10-08 00:00:00</inline>
+				</dir>
+				<dir name="socket"> <lwip dhcp="yes"/> </dir>
+				<dir name="etc">
+					<dir name="lighttpd">
+						<inline name="lighttpd.conf">
+# lighttpd configuration
+server.port            = 80
+server.document-root   = "/website"
+server.event-handler   = "select"
+server.network-backend = "write"
+index-file.names     = (
+  "index.html"
+)
+mimetype.assign      = (
+  ".html"         =>      "text/html",
+)
+						</inline>
+					</dir>
+				</dir>
+				<dir name="website">
+					<inline name="index.html"> <html><head>Congrats!.</head><body>Welcome to our lwIP HTTP server!. This is a small test page.</body></html></inline>
+					<rom name="data"/>
+				</dir>
+			</vfs>
+			<libc stdout="/dev/log" stderr="/dev/log" socket="/socket" rtc="/dev/rtc"/>
+		</config>
+		<route>
+			<service name="Nic"> <child name="nic_router"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+</config>}
+
+install_config $config
+
+exec -ignorestderr dd if=/dev/urandom of=[run_dir]/genode/data bs=1M count=16
+
+build_boot_image [build_artifacts]
+
+run_genode_until {New PLL1416=system_pll3_clk Ref_clk=0 bypass=0 reset=1 Gating_enable=1 Lock_signal=1} 15
+set genode_spawn_id [output_spawn_id]
+
+set idx 1
+while { 1 } {
+
+	puts "\n\033\[32mrun loop iteration $idx\033\[0m\n"
+
+	if { $test_with_reboot } {
+		reboot_test
+	} else {
+		restart_test
+	}
+
+	incr idx
+}
