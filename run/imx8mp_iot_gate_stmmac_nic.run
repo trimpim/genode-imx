@@ -9,6 +9,9 @@ if { ![have_board imx8mp_iot_gate] } {
 #
 set test_with_reboot 1
 
+# TODO: comment
+set toggle_pin 1
+
 
 
 # Inspired from run_genode_until, waits for a specific output `wait_for_re`
@@ -33,6 +36,8 @@ proc run_spawned_until { wait_for_re timeout_value running_spawn_id } {
 
 
 proc transfer_data { ip_addr } {
+
+	return
 
 	set curl_cmd [installed_command curl]
 	set pattern  {Congrats!.*Welcome to our lwIP HTTP server!.*This is a small test page.}
@@ -83,17 +88,15 @@ proc system_rom_config { } {
 	global test_with_reboot
 
 	if { $test_with_reboot } {
-		return {
-				<rom name="system">
+		return { <rom name="system">
 					<inline description="poweron"> <system state=""/> </inline>
-					<sleep milliseconds="20000"/>
+					<sleep milliseconds="15000"/>
 					<inline description="reset"> <system state="reset"/> </inline>
-					<sleep milliseconds="4000"/>
+					<sleep milliseconds="1500"/>
 				</rom>
 		}
 	} else {
-		return {
-				<rom name="system">
+		return { <rom name="system">
 					<inline description="poweron"> <system state=""/> </inline>
 					<sleep milliseconds="20000000"/>
 				</rom> }
@@ -123,9 +126,10 @@ proc init_rom_config { } {
 				<any-service> <parent/> </any-service>
 			</default-route>
 
-			<start name="nic" caps="200">
+			<start name="nic" caps="1000">
 				<binary name="stmmac_nic"/>
-				<resource name="RAM" quantum="20M"/>
+				<resource name="RAM" quantum="200M"/>
+				<config ld_verbose="yes"/>
 				<route>
 					<service name="ROM" label="dtb"> <parent label="stmmac_nic-imx8mp_iot_gate.dtb"/> </service>
 					<any-service> <parent/> </any-service>
@@ -179,10 +183,44 @@ proc init_rom_config { } {
 }
 
 
+proc pin_rom_config { } {
+	global toggle_pin
+
+	if { $toggle_pin } {
+		return { <rom name="pin_config">
+					<inline description="pin_off">
+						<config>
+							<!-- assert reset signal of STMMAC NICs Phy -->
+							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="off"/>
+						</config>
+					</inline>
+					<sleep milliseconds="500"/>
+					<inline description="pin_on">
+						<config>
+							<!-- deassert reset signal of STMMAC NICs Phy -->
+							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
+						</config>
+					</inline>
+					<sleep milliseconds="2000000000"/>
+				</rom> }
+	} else {
+		return { <rom name="pin_config">
+					<inline description="pin_on">
+						<config>
+							<!-- deassert reset signal of STMMAC NICs Phy -->
+							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
+						</config>
+					</inline>
+					<sleep milliseconds="2000000000"/>
+				</rom> }
+	}
+}
+
+
 create_boot_directory
 
 lappend depot_archives [depot_user]/raw/imx8mp_iot_gate-devices
-lappend depot_archives [depot_user]/src/[base_src]
+#lappend depot_archives [depot_user]/src/[base_src]
 lappend depot_archives [depot_user]/src/dynamic_rom
 lappend depot_archives [depot_user]/src/imx8mp_iot_gate-eeprom_reader
 lappend depot_archives [depot_user]/src/imx8mp_platform
@@ -195,7 +233,7 @@ lappend depot_archives [depot_user]/src/nic_router
 lappend depot_archives [depot_user]/src/openssl
 lappend depot_archives [depot_user]/src/posix
 lappend depot_archives [depot_user]/src/report_rom
-lappend depot_archives [depot_user]/src/stmmac_nic
+#lappend depot_archives [depot_user]/src/stmmac_nic
 lappend depot_archives [depot_user]/src/test-log
 lappend depot_archives [depot_user]/src/vfs
 lappend depot_archives [depot_user]/src/vfs_lwip
@@ -203,7 +241,10 @@ lappend depot_archives [depot_user]/src/zlib
 
 import_from_depot $depot_archives
 
-#build { test/lwip/http_srv }
+build {
+	core init lib/ld timer
+	driver/nic/stmmac
+}
 
 append config {
 <config>
@@ -254,6 +295,19 @@ append config {
 		</route>
 	</start>
 
+	<start name="dynamic_rom-pin">
+		<binary name="dynamic_rom"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="ROM"/> </provides>
+		<config verbose="yes">
+			} [pin_rom_config] {
+		</config>
+		<route>
+			<service name="Timer"> <child name="timer"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
 	<start name="platform" caps="150" managing_system="yes">
 		<binary name="imx8mp_platform"/>
 		<resource name="RAM" quantum="2M"/>
@@ -277,12 +331,9 @@ append config {
 			<service name="Pin_control"/>
 			<service name="Pin_state"/>
 		</provides>
-		<config>
-			<!-- deassert reset signal of STMMAC NICs Phy -->
-			<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
-		</config>
 		<route>
 			<service name="Platform"> <child name="platform"/> </service>
+			<service name="ROM" label="config"> <child name="dynamic_rom-pin" label="pin_config"/> </service>
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
@@ -319,8 +370,8 @@ append config {
 		</route>
 	</start>
 
-	<start name="init" caps="600">
-		<resource name="RAM" quantum="28M"/>
+	<start name="init" caps="1600">
+		<resource name="RAM" quantum="600M"/>
 		<route>
 			<service name="Platform"> <child name="platform"/> </service>
 			<service name="ROM" label="config"> <child name="dynamic_rom-init" label="init.config"/> </service>
@@ -359,6 +410,7 @@ append config {
 		</route>
 	</start>
 
+<!--
 	<start name="lighttpd" caps="200">
 		<resource name="RAM" quantum="1G" />
 		<config>
@@ -402,6 +454,7 @@ mimetype.assign      = (
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
+-->
 </config>}
 
 install_config $config
