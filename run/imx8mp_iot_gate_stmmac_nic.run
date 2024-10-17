@@ -3,15 +3,15 @@ if { ![have_board imx8mp_iot_gate] } {
 	exit 0
 }
 
+
 #
 # Thiselects if the test should reboot the board or only
 # restart the stmmac_nic driver.
 #
-set test_with_reboot 1
+set test_with_reboot 0
 
-# TODO: comment
-set toggle_pin 1
 
+proc current_pkg { pkg } { return $pkg/[_current_depot_archive_version pkg $pkg] }
 
 
 # Inspired from run_genode_until, waits for a specific output `wait_for_re`
@@ -71,16 +71,6 @@ proc reboot_test { } {
 	transfer_data $ip_addr
 
 	run_genode_until {Warning: Will reset...} 25 $genode_spawn_id
-}
-
-
-proc restart_test { } {
-	global genode_spawn_id
-
-	set ip_addr [get_ip_addr]
-	transfer_data $ip_addr
-
-	run_genode_until {Test done.} 20 $genode_spawn_id
 }
 
 
@@ -163,7 +153,7 @@ proc init_rom_config { } {
 
 		</config> }
 
-	if { $test_with_reboot } {
+	if { !$test_with_reboot } {
 		append dyn_cfg {
 				<rom name="init.config">
 					<inline description="start_driver">} $init_config_driver {</inline>
@@ -183,57 +173,25 @@ proc init_rom_config { } {
 }
 
 
-proc pin_rom_config { } {
-	global toggle_pin
-
-	if { $toggle_pin } {
-		return { <rom name="pin_config">
-					<inline description="pin_off">
-						<config>
-							<!-- assert reset signal of STMMAC NICs Phy -->
-							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="off"/>
-						</config>
-					</inline>
-					<sleep milliseconds="500"/>
-					<inline description="pin_on">
-						<config>
-							<!-- deassert reset signal of STMMAC NICs Phy -->
-							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
-						</config>
-					</inline>
-					<sleep milliseconds="2000000000"/>
-				</rom> }
-	} else {
-		return { <rom name="pin_config">
-					<inline description="pin_on">
-						<config>
-							<!-- deassert reset signal of STMMAC NICs Phy -->
-							<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
-						</config>
-					</inline>
-					<sleep milliseconds="2000000000"/>
-				</rom> }
-	}
-}
-
-
 create_boot_directory
 
+
 lappend depot_archives [depot_user]/raw/imx8mp_iot_gate-devices
-#lappend depot_archives [depot_user]/src/[base_src]
+lappend depot_archives [depot_user]/src/[base_src]
+lappend depot_archives [depot_user]/src/depot_deploy
+lappend depot_archives [depot_user]/src/depot_query
 lappend depot_archives [depot_user]/src/dynamic_rom
+lappend depot_archives [depot_user]/src/fs_rom
 lappend depot_archives [depot_user]/src/imx8mp_iot_gate-eeprom_reader
 lappend depot_archives [depot_user]/src/imx8mp_platform
 lappend depot_archives [depot_user]/src/imx8mq_i2c
 lappend depot_archives [depot_user]/src/imx_pin
 lappend depot_archives [depot_user]/src/init
 lappend depot_archives [depot_user]/src/libc
-lappend depot_archives [depot_user]/src/lighttpd
 lappend depot_archives [depot_user]/src/nic_router
-lappend depot_archives [depot_user]/src/openssl
-lappend depot_archives [depot_user]/src/posix
 lappend depot_archives [depot_user]/src/report_rom
-#lappend depot_archives [depot_user]/src/stmmac_nic
+lappend depot_archives [depot_user]/src/rom_filter
+lappend depot_archives [depot_user]/src/rom_reporter
 lappend depot_archives [depot_user]/src/test-log
 lappend depot_archives [depot_user]/src/vfs
 lappend depot_archives [depot_user]/src/vfs_lwip
@@ -241,10 +199,16 @@ lappend depot_archives [depot_user]/src/zlib
 
 import_from_depot $depot_archives
 
+
+lappend run_depot_archives [depot_user]/pkg/nic_stmmac-imx8mp_iot_gate
+
+create_tar_from_depot_binaries [run_dir]/genode/depot.tar $run_depot_archives
+
+
 build {
-	core init lib/ld timer
-	driver/nic/stmmac
+	server/heartbeat_monitor
 }
+
 
 append config {
 <config>
@@ -269,56 +233,17 @@ append config {
 		<provides> <service name="Timer"/> </provides>
 	</start>
 
-	<start name="dynamic_rom-system">
-		<binary name="dynamic_rom"/>
-		<resource name="RAM" quantum="2M"/>
-		<provides> <service name="ROM"/> </provides>
-		<config verbose="yes">
-			} [system_rom_config] {
-		</config>
-		<route>
-			<service name="Timer"> <child name="timer"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
-	<start name="dynamic_rom-init">
-		<binary name="dynamic_rom"/>
-		<resource name="RAM" quantum="2M"/>
-		<provides> <service name="ROM"/> </provides>
-		<config verbose="yes">
-			} [init_rom_config] {
-		</config>
-		<route>
-			<service name="Timer"> <child name="timer"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
-	<start name="dynamic_rom-pin">
-		<binary name="dynamic_rom"/>
-		<resource name="RAM" quantum="2M"/>
-		<provides> <service name="ROM"/> </provides>
-		<config verbose="yes">
-			} [pin_rom_config] {
-		</config>
-		<route>
-			<service name="Timer"> <child name="timer"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
 	<start name="platform" caps="150" managing_system="yes">
 		<binary name="imx8mp_platform"/>
 		<resource name="RAM" quantum="2M"/>
 		<provides> <service name="Platform"/> </provides>
 		<config verbose="yes">
-			<policy label="init -> nic -> " info="yes"> <device name="eqos"/> </policy>
+			<policy label_prefix="init -> nic -> " info="yes"> <device name="eqos"/> </policy>
 			<policy label="i2c -> "> <device name="i2c2"/> </policy>
 			<policy label="pin -> " info="yes"> <device name="gpio1"/> </policy>
 		</config>
 		<route>
-			<service name="ROM" label="system"> <child name="dynamic_rom-system"/> </service>
+			<service name="ROM" label="system"> <child name="report_rom"/> </service>
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
@@ -331,9 +256,12 @@ append config {
 			<service name="Pin_control"/>
 			<service name="Pin_state"/>
 		</provides>
+		<config>
+			<!-- deassert reset signal of STMMAC NICs Phy -->
+			<out name="STMMAC_PHY_nRST" bank="0" index="10" default="on"/>
+		</config>
 		<route>
 			<service name="Platform"> <child name="platform"/> </service>
-			<service name="ROM" label="config"> <child name="dynamic_rom-pin" label="pin_config"/> </service>
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
@@ -341,8 +269,10 @@ append config {
 	<start name="report_rom">
 		<resource name="RAM" quantum="2M"/>
 		<provides> <service name="Report"/> <service name="ROM"/> </provides>
-		<config verbose="no">
-			<policy label="init -> nic -> mac" report="eeprom -> eeprom_entry_1"/>
+		<config verbose="yes">
+			<policy label="init -> nic -> mac"      report="eeprom -> eeprom_entry_1"/>
+			<policy label="rom_filter -> nic_state" report="nic_router -> state"/>
+			<policy label="platform -> system"      report="null"/>
 		</config>
 	</start>
 
@@ -370,18 +300,6 @@ append config {
 		</route>
 	</start>
 
-	<start name="init" caps="1600">
-		<resource name="RAM" quantum="600M"/>
-		<route>
-			<service name="Platform"> <child name="platform"/> </service>
-			<service name="ROM" label="config"> <child name="dynamic_rom-init" label="init.config"/> </service>
-			<service name="ROM" label="nic -> mac"> <child name="report_rom"/> </service>
-			<service name="Timer"> <child name="timer"/> </service>
-			<service name="Uplink"> <child name="nic_router"/> </service>
-			<any-service> <parent/> </any-service>
-		</route>
-	</start>
-
 	<start name="nic_router" caps="200">
 		<resource name="RAM" quantum="10M"/>
 		<provides>
@@ -389,6 +307,16 @@ append config {
 			<service name="Uplink"/>
 		</provides>
 		<config verbose_domain_state="yes">
+
+			<report bytes="no"
+			        stats="no"
+			        dropped_fragm_ipv4="no"
+			        quota="no"
+			        config="yes"
+			        config_triggers="no"
+			        link_state="yes"
+			        link_state_triggers="no"
+			        interval_sec="5"/>
 
 			<domain name="uplink">
 				<nat domain="downlink" tcp-ports="16384"/>
@@ -400,72 +328,220 @@ append config {
 				<dhcp-server ip_first="10.0.3.2" ip_last="10.0.3.2"/>
 			</domain>
 
-			<policy label_prefix="lighttpd"     domain="downlink"/>
 			<policy label_prefix="init -> nic"  domain="uplink"/>
 
 		</config>
 		<route>
+			<service name="Report"> <child name="report_rom"/> </service>
 			<service name="Timer"> <child name="timer"/> </service>
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
 
-<!--
-	<start name="lighttpd" caps="200">
-		<resource name="RAM" quantum="1G" />
-		<config>
-			<arg value="lighttpd" />
-			<arg value="-f" />
-			<arg value="/etc/lighttpd/lighttpd.conf" />
-			<arg value="-D" />
-			<vfs>
-				<dir name="dev">
-					<log/> <null/> <zero/>
-					<inline name="rtc">2024-10-08 00:00:00</inline>
-				</dir>
-				<dir name="socket"> <lwip dhcp="yes"/> </dir>
-				<dir name="etc">
-					<dir name="lighttpd">
-						<inline name="lighttpd.conf">
-# lighttpd configuration
-server.port            = 80
-server.document-root   = "/website"
-server.event-handler   = "select"
-server.network-backend = "write"
-index-file.names     = (
-  "index.html"
-)
-mimetype.assign      = (
-  ".html"         =>      "text/html",
-)
-						</inline>
-					</dir>
-				</dir>
-				<dir name="website">
-					<inline name="index.html"> <html><head>Congrats!.</head><body>Welcome to our lwIP HTTP server!. This is a small test page.</body></html></inline>
-					<rom name="data"/>
-				</dir>
-			</vfs>
-			<libc stdout="/dev/log" stderr="/dev/log" socket="/socket" rtc="/dev/rtc"/>
-		</config>
+	<start name="init" caps="1600">
+		<resource name="RAM" quantum="600M"/>
 		<route>
-			<service name="Nic"> <child name="nic_router"/> </service>
+			<service name="Platform"> <child name="platform"/> </service>
+			<service name="ROM" label="config"> <child name="deploy_report_rom"/> </service>
+			<service name="ROM" label="nic -> mac"> <child name="report_rom"/> </service>
+			<service name="Report" label_last="state"> <child name="report_rom"/> </service>
 			<service name="Timer"> <child name="timer"/> </service>
+			<service name="Uplink"> <child name="nic_router"/> </service>
+			<service name="ROM" label_prefix="} [depot_user] {"> <child name="fs_rom"/> </service>
 			<any-service> <parent/> </any-service>
 		</route>
 	</start>
--->
+
+	<start name="deploy_report_rom" caps="100">
+		<binary name="report_rom"/>
+		<resource name="RAM" quantum="2M"/>
+		<provides>
+			<service name="Report"/>
+			<service name="ROM"/>
+		</provides>
+		<config verbose="no">
+			<policy label="depot_deploy -> blueprint"        report="depot_query -> blueprint"/>
+			<policy label="depot_query -> query"             report="depot_deploy -> query"/>
+			<policy label="heartbeat_monitor -> init.config" report="depot_deploy -> init.config"/>
+			<policy label="init -> config"                   report="heartbeat_monitor -> init.config"/>
+		</config>
+	</start>
+
+	<start name="depot_deploy" caps="100">
+		<resource name="RAM" quantum="40M"/>
+		<route>
+			<service name="ROM"    label="blueprint">   <child name="deploy_report_rom"/> </service>
+			<service name="ROM"    label="config">      <parent label="deploy"/> </service>
+			<service name="Report" label="init.config"> <child name="deploy_report_rom"/> </service>
+			<service name="Report" label="query">       <child name="deploy_report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="vfs" caps="200">
+		<resource name="RAM" quantum="40M"/>
+		<provides>
+			<service name="File_system"/>
+		</provides>
+		<config>
+			<vfs>
+				<dir name="depot">
+					<tar name="depot.tar"/>
+				</dir>
+			</vfs>
+			<default-policy root="depot"/>
+		</config>
+	</start>
+
+	<start name="fs_rom" caps="200">
+		<resource name="RAM" quantum="40M"/>
+		<provides>
+			<service name="ROM"/>
+		</provides>
+		<config>
+			<vfs>
+				<dir name="depot">
+					<fs/>
+				</dir>
+			</vfs>
+			<default-policy root="depot"/>
+		</config>
+		<route>
+			<service name="File_system"> <child name="vfs"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="depot_query" caps="100">
+		<resource name="RAM" quantum="4M"/>
+		<config query="rom">
+			<vfs>
+				<dir name="depot">
+					<fs/>
+				</dir>
+			</vfs>
+		</config>
+		<route>
+			<service name="File_system">              <child name="vfs"/> </service>
+			<service name="ROM"    label="query">     <child name="deploy_report_rom"/> </service>
+			<service name="Report" label="blueprint"> <child name="deploy_report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="heartbeat_monitor" caps="100">
+		<resource name="RAM" quantum="16M"/>
+		<config/>
+		<provides>
+			<service name="Report"/>
+		</provides>
+		<route>
+			<service name="ROM"    label="init.config">  <child name="deploy_report_rom"/> </service>
+			<service name="Report">                      <child name="deploy_report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="rom_filter" caps="100">
+		<resource name="RAM" quantum="16M"/>
+		<provides>
+			<service name="ROM"/>
+		</provides>
+		<config verbose="yes">
+
+			<input name="uplink_state" rom="nic_state" node="state" default="">
+				<node type="domain" attribute="name" value="uplink">
+					<node type="interface">
+						<attribute name="link_state"/>
+					</node>
+				</node>
+			</input>
+			<output node="system">
+				<attribute name="state" input="uplink_state"/>
+			</output>
+		</config>
+		<route>
+			<service name="ROM" label="nic_state"> <child name="report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="rom_reporter" caps="100">
+		<resource name="RAM" quantum="16M"/>
+		<config>
+			<rom label="system"/>
+		</config>
+		<route>
+			<service name="ROM" label="system"> <child name="rom_filter"/> </service>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
 </config>}
 
 install_config $config
 
 exec -ignorestderr dd if=/dev/urandom of=[run_dir]/genode/data bs=1M count=16
 
-build_boot_image [build_artifacts]
+append deploy_data {	<config arch="arm_v8a">
+		<static>
+			<parent-provides>
+				<service name="CPU"/>
+				<service name="IO_MEM"/>
+				<service name="IO_PORT"/>
+				<service name="LOG"/>
+				<service name="PD"/>
+				<service name="Platform"/>
+				<service name="RM"/>
+				<service name="ROM"/>
+				<service name="Report"/>
+				<service name="Timer"/>
+				<service name="Uplink"/>
+			</parent-provides>
+
+			<resource name="RAM" preserve="4M"/>
+			<resource name="CAP" preserve="50"/>
+		</static>
+
+		<common_routes>
+			<service name="CPU"> <parent/> </service>
+			<service name="LOG"> <parent/> </service>
+			<service name="PD"> <parent/> </service>
+			<service name="ROM" label_last="init" label="init"> <parent/> </service>
+			<service name="ROM" label_last="ld.lib.so" label="ld.lib.so"> <parent/> </service>
+			<service name="ROM" label_last="mac" label="nic -> mac"> <parent/> </service>
+			<service name="Report"> <parent/> </service>
+			<service name="Timer"> <parent/> </service>
+			<service name="Platform"> <parent/> </service>
+			<service name="Uplink"> <parent/> </service>
+		</common_routes>
+
+		<report delay_ms="5000" ids="yes" child_ram="yes" child_caps="yes" init_ram="yes" init_caps="yes"/>
+
+		<heartbeat rate_ms="2000"/>
+
+		<monitor_cpu_faults/>
+		<monitor_pd_faults/>
+
+		<start name="nic" pkg="} [depot_user] {/pkg/} [current_pkg nic_stmmac-imx8mp_iot_gate] {">
+			<heartbeat/>
+			<route>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+	</config>}
+
+set fd [open bin/deploy w]
+puts $fd $deploy_data
+close $fd
+
+build_boot_image [list {*}[build_artifacts] deploy]
 
 run_genode_until {New PLL1416=system_pll3_clk Ref_clk=0 bypass=0 reset=1 Gating_enable=1 Lock_signal=1} 15
 set genode_spawn_id [output_spawn_id]
 
+run_genode_until "-------------------------" 234500 $genode_spawn_id
 set idx 1
 while { 1 } {
 
