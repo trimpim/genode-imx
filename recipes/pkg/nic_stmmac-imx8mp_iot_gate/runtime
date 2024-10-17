@@ -1,0 +1,46 @@
+<runtime ram="25M" caps="400" binary="init">
+
+	<requires>
+		<uplink/>
+		<platform/>
+		<rom label="mac"/>
+	</requires>
+
+	<content>
+		<rom label="stmmac_nic"/>
+		<rom label="stmmac_nic-imx8mp_iot_gate.dtb"/>
+		<rom label="init"/>
+	</content>
+
+	<config>
+
+		<report delay_ms="5000" ids="yes" child_caps="yes" child_ram="yes" init_caps="yes" init_ram="yes"/>
+		<heartbeat rate_ms="20000"/>
+
+		<parent-provides>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="PD"/>
+			<service name="Platform"/>
+			<service name="Uplink"/>
+			<service name="RM"/>
+			<service name="ROM"/>
+			<service name="Timer"/>
+		</parent-provides>
+
+		<start name="stmmac_nic" caps="200">
+			<heartbeat/>
+			<monitor_pd_faults/>
+			<monitor_cpu_faults/>
+			<resource name="RAM" quantum="20M"/>
+			<config/>
+			<route>
+				<service name="ROM" label="dtb"> <parent label="stmmac_nic-imx8mp_iot_gate.dtb"/> </service>
+				<service name="ROM" label="mac"> <parent label="mac"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+	</config>
+
+</runtime>
